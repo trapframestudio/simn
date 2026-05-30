@@ -1,7 +1,7 @@
 //! End-to-end wound + bleed tests.
 
 use simn_sim::{
-    BodyPart, BodyParts, RegionGraph, SavePaths, Sim, WoundKind, WoundTreatment, Wounds,
+    BodyPart, BodyParts, NpcId, RegionGraph, SavePaths, Sim, WoundKind, WoundTreatment, Wounds,
 };
 use tempfile::TempDir;
 
@@ -331,9 +331,12 @@ fn disinfect_prevents_infection() {
         sim.tick().unwrap();
     }
     let v = sim.player_view(1).unwrap();
-    if let Some((_, w)) = v.wounds.first() {
-        assert!(!w.infected, "disinfected→bandaged wound shouldn't infect");
-    }
+    assert!(
+        !v.wounds.is_empty(),
+        "wound should still be present at assert time (heal_ticks=200 keeps it alive)"
+    );
+    let (_, w) = v.wounds.first().expect("wound should still be present");
+    assert!(!w.infected, "disinfected→bandaged wound shouldn't infect");
 }
 
 #[test]
@@ -352,9 +355,14 @@ fn antibiotics_clear_infection() {
         sim.tick().unwrap();
     }
     let v = sim.player_view(1).unwrap();
-    if let Some((_, w)) = v.wounds.first() {
-        assert!(!w.infected, "antibiotics should clear infection");
-    }
+    // The wound is Untreated, which never auto-heals/despawns, so it
+    // is guaranteed present here — assert that unconditionally.
+    assert!(
+        !v.wounds.is_empty(),
+        "untreated wound should still be present after antibiotics window"
+    );
+    let (_, w) = v.wounds.first().expect("wound should still be present");
+    assert!(!w.infected, "antibiotics should clear infection");
 }
 
 #[test]
@@ -568,11 +576,15 @@ fn npc_bleed_drains_part_hp_over_time() {
 }
 
 #[test]
-fn npc_combat_spawns_wound_without_journaling() {
-    // Two hostile NPCs in sight of each other; after combat fires,
-    // the damaged NPC should have a wound (proving the bleed path
-    // is live) but no `NpcWoundAdded` delta should appear in the
-    // journal for this combat event (proving the ephemeral policy).
+fn npc_combat_spawns_journaled_wound() {
+    // Two hostile NPCs in sight of each other. Phase 4A v2 routes
+    // combat damage through the projectile-tick path, which calls
+    // `Sim::apply_damage_to_npc_part` and therefore JOURNALS an
+    // `NpcWoundAdded` delta (unlike the retired probabilistic dice
+    // path, which was ephemeral). This test proves both halves:
+    //   1. combat actually spawns a wound on a combatant, and
+    //   2. that wound is reflected by an `NpcWoundAdded` delta whose
+    //      `(id, body_part)` matches a wound now present on the NPC.
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
     sim.set_active_region(1);
@@ -591,9 +603,13 @@ fn npc_combat_spawns_wound_without_journaling() {
     let bandit = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
     sim.set_npc_yaw_for_test(pwa, 0.0);
     sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
-    // Tick past at least one FIRE_INTERVAL_TICKS (50) so combat fires.
+    // Tick past several FIRE_INTERVAL_TICKS (50) so combat fires, and
+    // accumulate every per-tick delta. `drain_tick_deltas` only holds
+    // the most-recent tick's deltas, so we drain after each tick.
+    let mut all_deltas: Vec<simn_sim::WorldDelta> = Vec::new();
     for _ in 0..200 {
         sim.tick().unwrap();
+        all_deltas.extend(sim.drain_tick_deltas());
     }
     let pwa_wounds = sim.npc_wounds_for_test(pwa).unwrap();
     let bandit_wounds = sim.npc_wounds_for_test(bandit).unwrap();
@@ -602,10 +618,41 @@ fn npc_combat_spawns_wound_without_journaling() {
         any_combat_wounds,
         "combat should have spawned at least one wound between pwa+bandit"
     );
-    // None of those wounds should have a journaled NpcWoundAdded
-    // delta. The journal buffer isn't directly test-readable, but
-    // round-tripping the sim and checking that wounds disappear
-    // (since npc_combat doesn't journal) is the canonical proof.
+    // Collect every `NpcWoundAdded` delta journaled for either
+    // combatant across the combat window.
+    let journaled: Vec<(NpcId, BodyPart)> = all_deltas
+        .iter()
+        .filter_map(|d| match d {
+            simn_sim::WorldDelta::NpcWoundAdded { id, body_part, .. }
+                if *id == pwa || *id == bandit =>
+            {
+                Some((*id, *body_part))
+            }
+            _ => None,
+        })
+        .collect();
+    assert!(
+        !journaled.is_empty(),
+        "combat wounds must be journaled via NpcWoundAdded (projectile-tick path)"
+    );
+    // Cross-check: at least one journaled delta corresponds to a wound
+    // still present on the NPC — i.e. the journal reflects real state,
+    // not a phantom delta.
+    let present = |id: NpcId, part: BodyPart| {
+        let w = if id == pwa {
+            &pwa_wounds
+        } else {
+            &bandit_wounds
+        };
+        w.0.iter().any(|(_, wound)| wound.body_part == part)
+    };
+    assert!(
+        journaled.iter().any(|(id, part)| present(*id, *part)),
+        "a journaled NpcWoundAdded should match a wound currently on the NPC; \
+         journaled={journaled:?}, pwa={:?}, bandit={:?}",
+        pwa_wounds.0,
+        bandit_wounds.0,
+    );
 }
 
 // ---------- NPC treatment API ----------
@@ -732,7 +779,16 @@ fn antibiotics_clear_npc_infection() {
         sim.tick().unwrap();
     }
     let wounds_post = sim.npc_wounds_for_test(id).unwrap();
-    if let Some((_, w)) = wounds_post.0.first() {
-        assert!(!w.infected, "antibiotics should clear NPC infection");
-    }
+    // The wound is Untreated (never auto-heals/despawns), so it is
+    // guaranteed present here — assert the cleared infection state
+    // unconditionally.
+    assert!(
+        !wounds_post.0.is_empty(),
+        "untreated NPC wound should still be present after antibiotics window"
+    );
+    let (_, w) = wounds_post
+        .0
+        .first()
+        .expect("wound should still be present");
+    assert!(!w.infected, "antibiotics should clear NPC infection");
 }

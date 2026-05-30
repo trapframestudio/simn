@@ -947,9 +947,22 @@ fn shared_kit_pool_pulls_from_equipped_backpack() {
     sim.grant_item(1, &id("plastic_scrap"), 1).unwrap();
     sim.set_player_near_workbench(1, Some(simn_sim::ToolTier::Basic))
         .unwrap();
-    sim.queue_craft(1, "craft_antibiotics", 1).unwrap();
-    // If this compiles and queue_craft succeeds, kit-pool scan works
-    // through the rig-equipped player layout.
+    // can_craft must see the kit through the equipped rig + pockets,
+    // and the queued job must actually land.
+    let report = sim.can_craft(1, "craft_antibiotics");
+    assert!(
+        report.ok && report.missing_kit.is_none(),
+        "kit in pockets (rig equipped) should satisfy the kit requirement: missing_kit={:?}",
+        report.missing_kit
+    );
+    let job_id = sim.queue_craft(1, "craft_antibiotics", 1).unwrap();
+    let queue = sim.crafting_queue(1);
+    assert_eq!(queue.len(), 1, "one craft job should be queued");
+    assert_eq!(queue[0].id, job_id, "queued job id should match");
+    assert_eq!(
+        queue[0].count_remaining, 1,
+        "job should have one unit remaining"
+    );
 }
 
 // ---------- PR-4a: WorldContainer + drop-to-ground + public kit-pool ----------

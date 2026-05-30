@@ -83,9 +83,19 @@ fn accuracy_wiring_smoke_test() {
             "target still at full HP — npc_combat never fired or accuracy multiplier zeroed it",
         ),
         None => {
-            // Target despawned mid-combat — they took enough damage
-            // to die, which is an even stronger signal that the
-            // wiring works.
+            // Target despawned mid-combat — the common post-Phase-C
+            // outcome (both NPCs camp at point-blank, so the target
+            // usually dies). This is a stronger "wiring works" signal,
+            // but only if the despawn was actually combat-driven, so
+            // assert on the chronicle rather than waving it through.
+            let rec = sim
+                .chronicle_get(target)
+                .expect("despawned target should have a chronicle record");
+            assert!(
+                matches!(rec.death_cause, Some(simn_sim::DeathCause::Combat { .. })),
+                "target despawned but chronicle didn't record a combat death: {:?}",
+                rec.death_cause,
+            );
         }
     }
     let _ = (shooter, BodyPart::Torso);

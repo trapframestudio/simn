@@ -195,6 +195,21 @@ fn rest_at_campfire() {
     let spawn_pos = [50.0, 0.0, 50.0];
     let squad = spawn_squad_and_prime(&mut sim, "pwa", 1, spawn_pos, group_id, 4);
 
+    // The planner uses utility scoring — territorial PWA may pick Guard
+    // over Rest, which made the original assertion no-op behind an `if
+    // matches!(Rest)`. Inject the Rest objective directly (same pattern
+    // as `social_squad_gathers_at_rest`) so the Rest-approach behavior
+    // reliably occurs and can be asserted unconditionally. The
+    // `u64::MAX` expiry keeps the planner from flipping it mid-walk.
+    sim.set_squad_objective_for_test(
+        group_id,
+        SquadObjective::Rest {
+            base_pos: campfire_pos,
+            expires_at: u64::MAX,
+            area_id: None,
+        },
+    );
+
     for _ in 0..600 {
         sim.tick().unwrap();
     }
@@ -229,21 +244,25 @@ fn rest_at_campfire() {
         }
     }
 
-    // The planner uses utility scoring — Rest might not always win.
-    // Check that the squad at least moved from spawn.
+    // The injected objective must survive (u64::MAX expiry) — if the
+    // planner flipped it, the scenario under test didn't happen and the
+    // test must fail loudly rather than skip the movement check.
+    assert!(
+        matches!(obj, Some(SquadObjective::Rest { .. })),
+        "injected Rest objective should still be set, got {obj:?}"
+    );
+    // With a Rest objective at the campfire, the squad must walk toward
+    // it — assert both that they left spawn and that they arrived near
+    // the campfire.
     let spawn_dist = dist_xz(centroid, spawn_pos);
     assert!(
         spawn_dist > 5.0,
         "squad should have moved from spawn, centroid is only {spawn_dist:.1}m away"
     );
-
-    // If the planner DID pick Rest, verify movement toward campfire.
-    if matches!(obj, Some(SquadObjective::Rest { .. })) {
-        assert!(
-            centroid_dist < 30.0,
-            "squad with Rest objective should be within 30m of campfire, was {centroid_dist:.1}m"
-        );
-    }
+    assert!(
+        centroid_dist < 30.0,
+        "squad with Rest objective should be within 30m of campfire, was {centroid_dist:.1}m"
+    );
 }
 
 /// Test C: Combat → return to objective.
@@ -504,17 +523,26 @@ fn orphaned_pursue_target_clears() {
     }
 
     for &npc_id in &squad {
-        if let Some(goal) = sim.npc_active_goal_for_test(npc_id) {
-            let is_stale_pursue = matches!(
-                goal.kind,
-                GoalKind::PursueTarget { target } if target == bandit
-            );
-            assert!(
-                !is_stale_pursue,
-                "NPC {:?} still has PursueTarget on dead bandit after 300 ticks: {:?}",
-                npc_id, goal
-            );
-        }
+        // Hard precondition: the squad member must still be alive. The
+        // original test silently skipped dead NPCs (`if let Some(goal)`),
+        // which would let a regression that *kills* pursuers — instead
+        // of clearing their stale goal — pass vacuously.
+        assert!(
+            npc_alive(&mut sim, npc_id),
+            "squad member {npc_id:?} should still be alive 300 ticks after the bandit died"
+        );
+        let goal = sim
+            .npc_active_goal_for_test(npc_id)
+            .expect("living squad member must have an ActiveGoal");
+        let is_stale_pursue = matches!(
+            goal.kind,
+            GoalKind::PursueTarget { target } if target == bandit
+        );
+        assert!(
+            !is_stale_pursue,
+            "NPC {:?} still has PursueTarget on dead bandit after 300 ticks: {:?}",
+            npc_id, goal
+        );
     }
 }
 
@@ -604,11 +632,8 @@ fn diagnostic_full_game_objectives() {
     let mut obj_counts: std::collections::HashMap<&str, u32> = std::collections::HashMap::new();
     for (&gid, members) in &groups {
         let obj = sim.squad_objective_for_test(gid);
-        if let Some(o) = &obj {
-            if let SquadObjective::Wander { expires_at } = o {
-                let state = sim.squad_objective_for_test(gid);
-                eprintln!("    wander expires_at={expires_at} (current tick ~1001)");
-            }
+        if let Some(SquadObjective::Wander { expires_at }) = &obj {
+            eprintln!("    wander expires_at={expires_at} (current tick ~1001)");
         }
         let tag = match &obj {
             Some(SquadObjective::Guard { .. }) => "guard",
@@ -746,6 +771,21 @@ fn rest_dwell_jitter_desyncs_squad() {
     let spawn_pos = [50.0, 0.0, 50.0];
     let squad = spawn_squad_and_prime(&mut sim, "pwa", 1, spawn_pos, group_id, 4);
 
+    // Inject the Rest objective directly so the squad reliably walks to
+    // the campfire and settles into RestAt. The original test bailed
+    // (`if until_ticks.len() < 2 { return }`) whenever the utility
+    // planner picked something else — making the jitter assertion a
+    // no-op under objective-selection variance. `u64::MAX` expiry keeps
+    // the planner from flipping it before the squad arrives.
+    sim.set_squad_objective_for_test(
+        group_id,
+        SquadObjective::Rest {
+            base_pos: campfire_pos,
+            expires_at: u64::MAX,
+            area_id: None,
+        },
+    );
+
     // Walk to campfire + settle into RestAt.
     for _ in 0..1200 {
         sim.tick().unwrap();
@@ -769,13 +809,15 @@ fn rest_dwell_jitter_desyncs_squad() {
                 })
         })
         .collect();
-    // If we didn't catch them in RestAt (e.g. squad picked Wander
-    // instead) skip; the test is non-flaky over the desync claim and
-    // shouldn't fail the suite on objective-selection variance.
-    if until_ticks.len() < 2 {
-        eprintln!("squad not in RestAt; skipping jitter assertion");
-        return;
-    }
+    // Hard precondition: with the Rest objective injected, at least two
+    // members must be in the RestAt dwell so the per-NPC jitter spread
+    // is observable. If they're not, the dwell scenario didn't happen
+    // and the test must fail (not silently pass).
+    assert!(
+        until_ticks.len() >= 2,
+        "expected >=2 squad members in RestAt dwell, got {} (ticks={until_ticks:?})",
+        until_ticks.len()
+    );
     let min = *until_ticks.iter().min().unwrap();
     let max = *until_ticks.iter().max().unwrap();
     let spread = max - min;

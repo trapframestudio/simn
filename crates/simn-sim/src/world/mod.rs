@@ -726,6 +726,14 @@ impl Sim {
             tick_perf_history: std::collections::VecDeque::with_capacity(TICK_PERF_WINDOW),
         })
     }
+    /// Whether this sim writes to disk. Authoritative sims (`new` /
+    /// `load`) own a snapshot + journal path; mirror sims (`new_mirror`)
+    /// do not. Lets callers/tests assert the mirror's no-persistence
+    /// invariant.
+    pub fn persists_to_disk(&self) -> bool {
+        self.save_paths.is_some()
+    }
+
     // tick() and recent_tick_perf() → world/tick.rs
 
     /// Flush the journal and write a final snapshot. Call on graceful

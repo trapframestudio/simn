@@ -177,8 +177,10 @@ fn npc_projectiles_damage_online_npcs() {
     // that case the chronicle records a Combat death.
     use simn_sim::components::BodyPart as BP;
     let mut parts_summary: Option<(f32, f32, f32, f32, f32, f32)> = None;
+    let mut target_alive = false;
     sim.each_npc(|v| {
         if v.id == target {
+            target_alive = true;
             if let Some(bp) = v.body_parts {
                 parts_summary = Some((
                     bp.head,
@@ -193,28 +195,51 @@ fn npc_projectiles_damage_online_npcs() {
     });
     let _ = BP::Torso;
     let max = simn_sim::components::BodyParts::DEFAULT_MAX;
-    if let Some((h, t, la, ra, ll, rl)) = parts_summary {
-        let any_damaged = h < max - f32::EPSILON
-            || t < max - f32::EPSILON
-            || la < max - f32::EPSILON
-            || ra < max - f32::EPSILON
-            || ll < max - f32::EPSILON
-            || rl < max - f32::EPSILON;
+
+    // Exactly one of two outcomes is valid, and BOTH branches make a
+    // hard assertion (no vacuous path):
+    //   (a) the target survived 50 close-range acc=100 shots and shows
+    //       wear on at least one body part, OR
+    //   (b) the target was killed and despawned, with the chronicle
+    //       recording a Combat death.
+    let damage_observed = match parts_summary {
+        Some((h, t, la, ra, ll, rl)) => {
+            h < max - f32::EPSILON
+                || t < max - f32::EPSILON
+                || la < max - f32::EPSILON
+                || ra < max - f32::EPSILON
+                || ll < max - f32::EPSILON
+                || rl < max - f32::EPSILON
+        }
+        None => false,
+    };
+    let combat_death = sim
+        .chronicle_get(target)
+        .map(|rec| matches!(rec.death_cause, Some(simn_sim::DeathCause::Combat { .. })))
+        .unwrap_or(false);
+
+    if target_alive {
+        // Target survived: damage on a body part is the only valid
+        // signal here.
         assert!(
-            any_damaged,
-            "target should have taken projectile damage to at least one body part \
-             (head={h}, torso={t}, larm={la}, rarm={ra}, lleg={ll}, rleg={rl})",
+            damage_observed,
+            "alive target should show projectile damage on at least one body part; \
+             parts_summary={parts_summary:?}",
         );
     } else {
-        let rec = sim
-            .chronicle_get(target)
-            .expect("target should have a chronicle record (alive or dead)");
+        // Target despawned (killed): the chronicle must record a
+        // Combat death.
         assert!(
-            matches!(rec.death_cause, Some(simn_sim::DeathCause::Combat { .. })),
-            "target despawned but chronicle didn't record a combat death: {:?}",
-            rec.death_cause,
+            combat_death,
+            "target despawned but chronicle didn't record a combat death",
         );
     }
+    // Whichever branch we took, exactly one of the two signals holds.
+    assert!(
+        damage_observed ^ combat_death,
+        "exactly one of {{damage observed, combat death}} should hold \
+         (damage_observed={damage_observed}, combat_death={combat_death})",
+    );
 }
 
 // --- Phase 4B v1: faction-flavored round selection -----------------

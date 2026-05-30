@@ -89,11 +89,29 @@ fn solo_npc_has_no_threat_board() {
 
     sim.tick().unwrap();
 
-    // No group_id assigned to solo NPCs — there's no blackboard to check.
-    // Just verify the sim ran without panicking and the solo NPC's
-    // own RecentAttackers persists.
-    // (The threat_board sweep is the focus here; solo path is the
-    // skip-with-no-side-effects one.)
+    // The grouped sibling test (`squad_threat_board_aggregates_member_attackers`)
+    // proves a hit on a *grouped* member produces a ThreatList on that
+    // group's blackboard. The invariant here is the mirror: an
+    // unaffiliated NPC (no Group) must NOT produce any threat-board
+    // entry — the sweep gates on `Some(Group)` and skips ungrouped
+    // NPCs. Solo NPCs surface as group_id 0 in the view; the spawn
+    // above is the only NPC in the world with damage on file, so if
+    // any board exists for group 0 the gate has regressed.
+    let mut solo_group = None;
+    sim.each_npc(|v| {
+        if v.id == solo {
+            solo_group = Some(v.group_id);
+        }
+    });
+    let gid = solo_group.expect("solo NPC must be alive after the sweep");
+    assert_eq!(
+        gid, 0,
+        "an NPC spawned with no group must report group_id 0"
+    );
+    assert!(
+        sim.squad_blackboard(gid).is_none(),
+        "ungrouped NPC must not produce a squad threat board, but group {gid} has one",
+    );
 }
 
 #[test]

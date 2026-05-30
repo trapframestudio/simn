@@ -243,15 +243,25 @@ fn mirror_sim_no_disk_writes() {
     // Build a mirror, apply some ticks, ensure the process never
     // opens a file under any save path.
     let mut mirror = mirror_sim();
+    // A mirror must never own a save destination: no snapshot/journal
+    // path, before or after ticking. If a refactor ever wires the
+    // mirror to persist (e.g. new_mirror gaining SavePaths), this fails.
+    assert!(
+        !mirror.persists_to_disk(),
+        "a fresh mirror must not persist to disk"
+    );
     for _ in 0..50 {
         mirror.tick().unwrap();
     }
-    // There's no way to inspect filesystem access from here; rely on
-    // the structural invariant: `new_mirror` takes no `SavePaths`, and
-    // `shutdown` is a no-op.
+    assert!(
+        !mirror.persists_to_disk(),
+        "ticking a mirror must not give it a save destination"
+    );
     mirror.shutdown().unwrap();
-    // If this test ever gains a tempdir + directory-listing check, do
-    // it here. For now, compile-time proof via API is sufficient.
+    assert!(
+        !mirror.persists_to_disk(),
+        "shutdown must not give a mirror a save destination"
+    );
 }
 
 #[test]

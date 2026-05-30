@@ -34,8 +34,6 @@ fn two_hostile_offline_squads_eventually_produce_a_death() {
         sim.spawn_offline_npc_for_test("bandits", 1, [dx + 1.0, 50.0]);
     }
 
-    let bus_before = sim.world_event_queue_len();
-
     // 120 offline ticks ≈ 60 s of sim wall time. With per-tick hit
     // chance ~0.05 and three HealthClass steps to kill, expected
     // first death lands well before 60 ticks; 120 gives plenty of
@@ -56,12 +54,6 @@ fn two_hostile_offline_squads_eventually_produce_a_death() {
         "at least one death should be tagged as Combat (got {:?})",
         deaths.iter().map(|r| &r.death_cause).collect::<Vec<_>>()
     );
-
-    // Bus should have AllyDown + Gunshot events pushed since the
-    // pre-test snapshot. Events drain each tick so we just check
-    // the running counter increased.
-    let bus_after = sim.world_event_queue_len();
-    let _ = (bus_before, bus_after);
 }
 
 #[test]
@@ -154,10 +146,11 @@ fn neutral_factions_dont_engage_offline() {
     let pwa = registry.id_of("pwa").unwrap();
     let wand = registry.id_of("wanderers").unwrap();
     let relation = sim.faction_relation(pwa, wand);
-    if matches!(relation, simn_sim::Relation::Hostile) {
-        // Test premise broken — skip rather than misreport.
-        return;
-    }
+    assert!(
+        !matches!(relation, simn_sim::Relation::Hostile),
+        "test premise: pwa<->wanderers must be non-hostile (got {relation:?}); \
+         pick a different non-hostile pair if the registry changed"
+    );
 
     for i in 0..6 {
         sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);

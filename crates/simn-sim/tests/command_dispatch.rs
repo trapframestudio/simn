@@ -92,12 +92,24 @@ fn dispatch_set_active_region_changes_focus() {
     let _dir = TempDir::new().unwrap();
     let mut sim = Sim::new_in_memory(RegionGraph::default_test_graph());
     dispatch_command(&mut sim, SimCommand::SetActiveRegion { region: 2 }).unwrap();
-    // No public read of ActiveRegions today (it's a resource);
-    // the proxy is that tick() runs without panic and that
-    // subsequent SetActiveRegion calls also succeed.
+    // SetActiveRegion replaces the active set with the single region,
+    // so 2 is now online and 1 is offline.
     sim.tick().unwrap();
+    assert!(
+        sim.is_region_active(2),
+        "region 2 should be active after dispatch"
+    );
+    assert!(
+        !sim.is_region_active(1),
+        "region 1 should be offline once 2 is active"
+    );
     dispatch_command(&mut sim, SimCommand::SetActiveRegion { region: 1 }).unwrap();
     sim.tick().unwrap();
+    assert!(sim.is_region_active(1), "focus should move to region 1");
+    assert!(
+        !sim.is_region_active(2),
+        "region 2 should go offline when focus moves to 1"
+    );
 }
 
 #[test]

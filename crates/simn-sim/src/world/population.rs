@@ -85,6 +85,13 @@ impl Sim {
     /// derived from `(npc_id, faction_id)`). The invariant is "an
     /// NPC is an online entity iff its region is in
     /// `ActiveRegions`."
+    /// Whether `region` is currently in the active (online) set. The
+    /// inverse of the offline tier: an NPC is online iff its region is
+    /// active. Read-only inspection accessor.
+    pub fn is_region_active(&self, region: crate::region::RegionId) -> bool {
+        self.world.resource::<ActiveRegions>().is_active(region)
+    }
+
     pub fn set_active_region(&mut self, region: crate::region::RegionId) {
         use std::collections::HashSet;
         let current: HashSet<crate::region::RegionId> =

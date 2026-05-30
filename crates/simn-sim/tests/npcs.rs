@@ -197,12 +197,12 @@ fn age_kills_at_die_at_tick() {
     sim.each_npc(|v| {
         victim.get_or_insert(v.id);
     });
-    let Some(id) = victim else {
-        // Empty graph has no bases, so spawner can't pick a base; it
-        // falls back to random pos. If even then nothing spawned, the
-        // test isn't useful — bail.
-        return;
-    };
+    // Hard precondition: the spawner MUST have produced the single
+    // wanderer the target asked for. The empty graph has no bases, so
+    // the spawner falls back to a random position — if that path ever
+    // regresses and produces no NPC, this test must FAIL (not silently
+    // pass), since with no victim there's nothing to age out.
+    let id = victim.expect("spawner must produce the targeted wanderer within 100 ticks");
     sim.force_lifespan_for_test(id, 0); // die immediately
     sim.tick().unwrap();
     let rec = sim.chronicle_get(id).expect("record");
@@ -214,15 +214,14 @@ fn age_kills_at_die_at_tick() {
 fn recent_deaths_returns_in_order() {
     let dir = TempDir::new().unwrap();
     let mut sim = light_populated_sim(&dir);
-    for _ in 0..100 {
-        sim.tick().unwrap();
-    }
-    let mut ids: Vec<_> = Vec::new();
-    sim.each_npc(|v| ids.push(v.id));
-    let to_kill: Vec<_> = ids.into_iter().take(3).collect();
-    if to_kill.len() < 3 {
-        return;
-    }
+    // Deterministically seed exactly the NPCs this test kills, rather
+    // than depending on the (scaled, RNG-driven) auto-spawner happening
+    // to produce >=3 within 100 ticks. The previous `if len < 3 {
+    // return }` made the whole test no-op on an under-spawn regression.
+    let to_kill: Vec<_> = (0..3)
+        .map(|i| sim.spawn_npc_for_test("wanderers", 1, [i as f32 * 2.0, 0.0, 0.0], None))
+        .collect();
+    assert_eq!(to_kill.len(), 3, "test must stage exactly 3 victims");
     for id in &to_kill {
         sim.kill_npc_for_test(*id, DeathCause::NaturalCauses);
         // tick so each death has a distinct tick
@@ -376,14 +375,23 @@ fn squad_gets_an_objective() {
     let obj = sim
         .squad_objective_for_test(group_id)
         .expect("planner should have set an objective");
-    // Any kind is fine — just assert one exists.
-    let _ = matches!(
-        obj,
-        SquadObjective::Patrol { .. }
-            | SquadObjective::Guard { .. }
-            | SquadObjective::Investigate { .. }
-            | SquadObjective::Wander { .. }
-            | SquadObjective::Regroup { .. }
+    // Any of the planner's real objective variants is fine — but it
+    // MUST be one of them, not some unhandled/default state. Asserting
+    // the match (rather than discarding it) makes this fail if the
+    // planner ever stops producing a recognized objective kind.
+    assert!(
+        matches!(
+            obj,
+            SquadObjective::Patrol { .. }
+                | SquadObjective::Guard { .. }
+                | SquadObjective::Investigate { .. }
+                | SquadObjective::Explore { .. }
+                | SquadObjective::Relieve { .. }
+                | SquadObjective::Rest { .. }
+                | SquadObjective::Wander { .. }
+                | SquadObjective::Regroup { .. }
+        ),
+        "planner set an unrecognized objective: {obj:?}"
     );
 }
 
@@ -489,39 +497,36 @@ fn goal_fsm_progresses() {
     let dir = TempDir::new().unwrap();
     let mut sim = light_populated_sim(&dir);
     sim.set_active_region(1);
-    for _ in 0..100 {
-        sim.tick().unwrap();
-    }
-    // Pick a solo NPC (no Group) in the active region. Grouped NPCs
-    // are driven by the squad-objective system, which bypasses
-    // `NpcGoal` entirely; offline-region NPCs are frozen by the
-    // active-region filter in `tick_npc_goals`. The per-NPC FSM only
-    // runs for solo NPCs in the active region.
-    let mut victim = None;
-    sim.each_npc(|v| {
-        if v.group_id == 0 && v.region == 1 && victim.is_none() {
-            victim = Some(v.id);
-        }
-    });
-    let Some(id) = victim else { return };
+    // Spawn a dedicated solo NPC (no Group) in the active region rather
+    // than scavenging one out of the auto-spawner. Grouped NPCs are
+    // driven by the squad-objective system, which bypasses `NpcGoal`
+    // entirely; offline-region NPCs are frozen by the active-region
+    // filter in `tick_npc_goals`. The per-NPC FSM only runs for solo
+    // NPCs in the active region, so this gives us a guaranteed subject.
+    let id = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    // Pin a far-future lifespan so the NPC cannot die of old age inside
+    // the observation window — that previously counted as a "pass" even
+    // though the FSM never actually left Idle.
+    sim.force_lifespan_for_test(id, 10_000_000);
 
-    // Tick a long time and assert at least one MoveTo or RestAt
-    // was observed (FSM did transition out of Idle).
+    // Tick a long time and require the FSM to leave Idle for a *real*
+    // reason (a MoveTo or RestAt goal). Death no longer short-circuits
+    // to success; if the NPC vanishes that's a failure, not a pass.
     let mut saw_non_idle = false;
     for _ in 0..2000 {
         sim.tick().unwrap();
-        if let Some(g) = sim.npc_goal_for_test(id) {
-            if !matches!(g, NpcGoal::Idle { .. }) {
-                saw_non_idle = true;
-                break;
-            }
-        } else {
-            // NPC died of old age; that's fine, the goal cycled.
+        let g = sim
+            .npc_goal_for_test(id)
+            .expect("solo NPC must stay alive for the full FSM window");
+        if matches!(g, NpcGoal::MoveTo { .. } | NpcGoal::RestAt { .. }) {
             saw_non_idle = true;
             break;
         }
     }
-    assert!(saw_non_idle);
+    assert!(
+        saw_non_idle,
+        "solo NPC FSM should transition out of Idle into MoveTo/RestAt within 2000 ticks"
+    );
 }
 
 // ---- offline-NPC parity (player-reported bug + spatial hash) ----
