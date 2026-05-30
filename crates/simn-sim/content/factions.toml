@@ -1,0 +1,543 @@
+# Example faction registry (generic). Demonstrates the schema; ships
+# with SIMN so the sim runs standalone. A consuming game overrides
+# this file (and chatter/names) via a ContentSource overlay.
+#
+# Keys, relations, archetypes, and nationality weights are mechanical
+# and reusable; display strings are derived from the key.
+
+default_relation = "neutral"
+player_baseline = "wanderers"
+
+[[faction]]
+name = "pwa"
+display = "Pwa"
+road_friendly = true
+base_aggression = 0.60
+default_loadout = "pwa_basic"
+debug_color = [0xCC, 0xCC, 0x33]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 8
+east_asian = 3
+latin_american = 3
+western_european = 2
+slavic = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "linemen"
+parent = "pwa"
+display = "Linemen"
+road_friendly = true
+base_aggression = 0.85
+default_loadout = "linemen_elite"
+debug_color = [0xFF, 0xCC, 0x00]
+archetype = "aggressive"
+[faction.nationality_weights]
+american = 6
+western_european = 2
+latin_american = 2
+slavic = 1
+east_asian = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "revere_guard"
+display = "Revere Guard"
+road_friendly = true
+base_aggression = 0.70
+default_loadout = "rg_basic"
+debug_color = [0x99, 0x33, 0x33]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 14
+western_european = 2
+latin_american = 1
+slavic = 1
+
+[[faction]]
+name = "federal"
+display = "Federal"
+road_friendly = true
+base_aggression = 0.75
+default_loadout = "federal_basic"
+debug_color = [0x33, 0x33, 0x99]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 10
+western_european = 2
+west_african = 2
+latin_american = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+middle_eastern = 1
+
+[[faction]]
+name = "ghost_teams"
+parent = "federal"
+display = "Ghost Teams"
+road_friendly = false
+base_aggression = 0.90
+default_loadout = "ghost_team_kit"
+debug_color = [0x22, 0x22, 0x44]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 14
+western_european = 2
+west_african = 1
+latin_american = 1
+slavic = 1
+east_asian = 1
+
+[[faction]]
+name = "gulf_compact"
+display = "Gulf Compact"
+road_friendly = true
+base_aggression = 0.60
+default_loadout = "compact_basic"
+debug_color = [0x66, 0x99, 0xCC]
+archetype = "greedy"
+[faction.nationality_weights]
+american = 8
+latin_american = 5
+western_european = 2
+middle_eastern = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+west_african = 1
+
+[[faction]]
+name = "registry"
+parent = "gulf_compact"
+display = "Registry"
+road_friendly = true
+base_aggression = 0.85
+default_loadout = "registry_kit"
+debug_color = [0x33, 0x66, 0x99]
+archetype = "greedy"
+[faction.nationality_weights]
+american = 8
+latin_american = 5
+western_european = 2
+middle_eastern = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+west_african = 1
+
+[[faction]]
+name = "aegis_pacific"
+display = "Aegis Pacific"
+road_friendly = true
+base_aggression = 0.65
+default_loadout = "aegis_basic"
+debug_color = [0x00, 0x99, 0x99]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 6
+east_asian = 5
+western_european = 3
+south_asian = 2
+latin_american = 1
+slavic = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "recovery_division"
+parent = "aegis_pacific"
+display = "Recovery Division"
+road_friendly = false
+base_aggression = 0.85
+default_loadout = "recovery_kit"
+debug_color = [0x00, 0x66, 0x66]
+archetype = "disciplined"
+[faction.nationality_weights]
+american = 8
+east_asian = 3
+western_european = 2
+south_asian = 1
+latin_american = 1
+slavic = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "attuned"
+display = "Attuned"
+road_friendly = false
+base_aggression = 0.55
+default_loadout = "attuned_basic"
+debug_color = [0x99, 0x00, 0x66]
+archetype = "reverent"
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "choir"
+parent = "attuned"
+display = "Choir"
+road_friendly = false
+base_aggression = 0.80
+default_loadout = "choir_kit"
+debug_color = [0xCC, 0x33, 0x99]
+archetype = "reverent"
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "merged"
+display = "Merged"
+road_friendly = false
+base_aggression = 0.95
+default_loadout = "merged_endgame"
+debug_color = [0xCC, 0x00, 0xCC]
+archetype = "aggressive"
+[faction.nationality_weights]
+american = 4
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 2
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "bandits"
+display = "Bandits"
+road_friendly = false
+base_aggression = 0.65
+default_loadout = "bandit_basic"
+debug_color = [0x66, 0x33, 0x00]
+archetype = "greedy"
+[faction.nationality_weights]
+american = 8
+latin_american = 2
+slavic = 2
+western_european = 1
+east_asian = 1
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "looters"
+parent = "bandits"
+display = "Looters"
+road_friendly = false
+base_aggression = 0.70
+default_loadout = "looter_scrap"
+debug_color = [0x88, 0x44, 0x22]
+archetype = "greedy"
+[faction.nationality_weights]
+american = 8
+latin_american = 2
+slavic = 2
+western_european = 1
+east_asian = 1
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "cartel"
+parent = "bandits"
+display = "Cartel"
+road_friendly = false
+base_aggression = 0.75
+default_loadout = "cartel_smg"
+debug_color = [0x99, 0x55, 0x11]
+archetype = "aggressive"
+[faction.nationality_weights]
+latin_american = 7
+american = 2
+western_european = 1
+slavic = 1
+east_asian = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "wanderers"
+display = "Wanderers"
+road_friendly = false
+base_aggression = 0.30
+default_loadout = "wanderer_basic"
+debug_color = [0xAA, 0xAA, 0xAA]
+archetype = "curious"
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[relation]]
+a = "pwa"
+b = "linemen"
+value = "warm"
+
+[[relation]]
+a = "pwa"
+b = "revere_guard"
+value = "hostile"
+
+[[relation]]
+a = "pwa"
+b = "federal"
+value = "cold"
+
+[[relation]]
+a = "pwa"
+b = "gulf_compact"
+value = "neutral"
+
+[[relation]]
+a = "pwa"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "pwa"
+b = "attuned"
+value = "cold"
+
+[[relation]]
+a = "pwa"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "pwa"
+b = "aegis_pacific"
+value = "cold"
+
+[[relation]]
+a = "linemen"
+b = "gulf_compact"
+value = "hostile"
+
+[[relation]]
+a = "linemen"
+b = "attuned"
+value = "hostile"
+
+[[relation]]
+a = "linemen"
+b = "aegis_pacific"
+value = "hostile"
+
+[[relation]]
+a = "linemen"
+b = "wanderers"
+value = "cold"
+
+[[relation]]
+a = "revere_guard"
+b = "federal"
+value = "cold"
+
+[[relation]]
+a = "revere_guard"
+b = "gulf_compact"
+value = "warm"
+
+[[relation]]
+a = "revere_guard"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "revere_guard"
+b = "attuned"
+value = "hostile"
+
+[[relation]]
+a = "revere_guard"
+b = "bandits"
+value = "cold"
+
+[[relation]]
+a = "revere_guard"
+b = "aegis_pacific"
+value = "cold"
+
+[[relation]]
+a = "federal"
+b = "gulf_compact"
+value = "cold"
+
+[[relation]]
+a = "federal"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "federal"
+b = "attuned"
+value = "cold"
+
+[[relation]]
+a = "federal"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "federal"
+b = "aegis_pacific"
+value = "cold"
+
+[[relation]]
+a = "ghost_teams"
+b = "attuned"
+value = "hostile"
+
+[[relation]]
+a = "ghost_teams"
+b = "aegis_pacific"
+value = "hostile"
+
+[[relation]]
+a = "gulf_compact"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "gulf_compact"
+b = "attuned"
+value = "cold"
+
+[[relation]]
+a = "gulf_compact"
+b = "bandits"
+value = "cold"
+
+[[relation]]
+a = "gulf_compact"
+b = "aegis_pacific"
+value = "warm"
+
+[[relation]]
+a = "registry"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "registry"
+b = "cartel"
+value = "neutral"
+
+[[relation]]
+a = "aegis_pacific"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "aegis_pacific"
+b = "attuned"
+value = "hostile"
+
+[[relation]]
+a = "aegis_pacific"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "recovery_division"
+b = "wanderers"
+value = "cold"
+
+[[relation]]
+a = "attuned"
+b = "merged"
+value = "hostile"
+
+[[relation]]
+a = "attuned"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "attuned"
+b = "wanderers"
+value = "neutral"
+
+[[relation]]
+a = "choir"
+b = "wanderers"
+value = "cold"
+
+[[relation]]
+a = "choir"
+b = "pwa"
+value = "hostile"
+
+[[relation]]
+a = "choir"
+b = "federal"
+value = "hostile"
+
+[[relation]]
+a = "choir"
+b = "gulf_compact"
+value = "hostile"
+
+[[relation]]
+a = "choir"
+b = "revere_guard"
+value = "hostile"
+
+[[relation]]
+a = "merged"
+b = "bandits"
+value = "hostile"
+
+[[relation]]
+a = "merged"
+b = "wanderers"
+value = "hostile"
+
+[[relation]]
+a = "bandits"
+b = "wanderers"
+value = "hostile"
+
+[[relation]]
+a = "looters"
+b = "aegis_pacific"
+value = "hostile"
+
+[[relation]]
+a = "cartel"
+b = "gulf_compact"
+value = "neutral"
+
+[[relation]]
+a = "cartel"
+b = "aegis_pacific"
+value = "cold"

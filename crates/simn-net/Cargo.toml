@@ -1,0 +1,16 @@
+[package]
+name = "simn-net"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+steamworks = "0.11"
+serde = { version = "1", features = ["derive"] }
+bincode = "1.3"
+parking_lot = "0.12"
+tracing.workspace = true
+anyhow.workspace = true
+
+[dev-dependencies]
+# Round-trip tests

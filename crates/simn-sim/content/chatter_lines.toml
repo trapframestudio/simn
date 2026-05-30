@@ -1,0 +1,11 @@
+# Example tactical chatter (generic). The bridge shows these as floating
+# text above NPCs. Faction-specific blocks fall back to [default]; a game
+# supplies its own per-faction flavor via a ContentSource overlay.
+
+[default]
+alarm = ["Contact!", "Enemy spotted!", "Hostile!"]
+callout_suppress = ["Pinned down!", "Taking fire!", "Can't move!"]
+callout_flank = ["Flanking!", "Going around!", "Moving up!"]
+callout_retreat = ["Falling back!", "Pull back!", "Regroup!"]
+callout_reload = ["Reloading!", "Cover me!"]
+mourning = ["Man down!", "We lost one!", "Medic!"]

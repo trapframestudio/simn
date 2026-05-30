@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/simn-common",
+    "crates/simn-sim",
+    "crates/simn-terrain",
+    "crates/simn-net",
+    "crates/simn-godot",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["trapframe studio"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/trapframestudio/simn"
+
+[workspace.dependencies]
+# Godot engine (gdext bindings) — only `simn-godot` depends on this.
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master", features = ["experimental-threads"] }
+
+# Logging
+tracing = "0.1"
+
+# Error handling
+anyhow = "1"

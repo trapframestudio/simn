@@ -1,0 +1,22 @@
+[package]
+name = "simn-godot"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+# cdylib: the loadable gdext extension Godot links (libsimn_godot.so).
+# rlib: lets a consuming game crate depend on this bridge to register
+# its own gdext classes within a single combined cdylib (see SIMN split plan).
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+godot = { workspace = true }
+simn-common = { path = "../simn-common" }
+simn-net = { path = "../simn-net" }
+simn-sim = { path = "../simn-sim" }
+simn-terrain = { path = "../simn-terrain" }
+anyhow.workspace = true
+bincode = "1.3"
+blake3 = "1.8"
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
