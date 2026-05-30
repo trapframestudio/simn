@@ -1,16 +1,4 @@
-# Generic example names (override via content overlay).
-Alex
-Sam
-Jordan
-Casey
-Taylor
-Morgan
-Riley
-Jamie
-Avery
-Quinn
-Drew
-Skyler
+# Generic example names (override per game via a content overlay).
 Reese
 Rowan
 Sage
@@ -33,3 +21,13 @@ Oakley
 Phoenix
 Remy
 Shay
+Blair
+Corey
+Dana
+Eden
+Frankie
+Glenn
+Harper
+Indie
+Jules
+Kit

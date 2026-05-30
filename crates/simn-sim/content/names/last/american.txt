@@ -1,4 +1,4 @@
-# Generic example names (override via content overlay).
+# Generic example names (override per game via a content overlay).
 Carter
 Reyes
 Novak
@@ -31,5 +31,3 @@ Patel
 Owusu
 Brandt
 Karim
-Hughes
-Vega

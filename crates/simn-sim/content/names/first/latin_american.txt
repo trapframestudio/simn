@@ -1,8 +1,4 @@
-# Generic example names (override via content overlay).
-Alex
-Sam
-Jordan
-Casey
+# Generic example names (override per game via a content overlay).
 Taylor
 Morgan
 Riley
@@ -33,3 +29,5 @@ Oakley
 Phoenix
 Remy
 Shay
+Blair
+Corey

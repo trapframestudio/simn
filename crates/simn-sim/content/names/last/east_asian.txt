@@ -1,16 +1,4 @@
-# Generic example names (override via content overlay).
-Carter
-Reyes
-Novak
-Sato
-Khan
-Mbeki
-Fischer
-Hassan
-Walker
-Romero
-Petrov
-Chen
+# Generic example names (override per game via a content overlay).
 Singh
 Okafor
 Klein
@@ -33,3 +21,13 @@ Brandt
 Karim
 Hughes
 Vega
+Kovac
+Lim
+Mensah
+Nguyen
+Osei
+Pena
+Rahman
+Stein
+Torres
+Ueda

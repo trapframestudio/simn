@@ -1,24 +1,4 @@
-# Generic example names (override via content overlay).
-Carter
-Reyes
-Novak
-Sato
-Khan
-Mbeki
-Fischer
-Hassan
-Walker
-Romero
-Petrov
-Chen
-Singh
-Okafor
-Klein
-Aziz
-Bennett
-Diaz
-Ivanov
-Park
+# Generic example names (override per game via a content overlay).
 Sharma
 Diallo
 Weber
@@ -33,3 +13,21 @@ Brandt
 Karim
 Hughes
 Vega
+Kovac
+Lim
+Mensah
+Nguyen
+Osei
+Pena
+Rahman
+Stein
+Torres
+Ueda
+Vasquez
+Wong
+Yilmaz
+Zhang
+Adler
+Boyd
+Cruz
+Dunn

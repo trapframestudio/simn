@@ -1,12 +1,4 @@
-# Generic example names (override via content overlay).
-Carter
-Reyes
-Novak
-Sato
-Khan
-Mbeki
-Fischer
-Hassan
+# Generic example names (override per game via a content overlay).
 Walker
 Romero
 Petrov
@@ -33,3 +25,9 @@ Brandt
 Karim
 Hughes
 Vega
+Kovac
+Lim
+Mensah
+Nguyen
+Osei
+Pena

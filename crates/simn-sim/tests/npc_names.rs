@@ -63,6 +63,28 @@ fn registry_first_names_are_non_empty_and_distinct() {
 }
 
 #[test]
+fn example_pack_buckets_are_distinct() {
+    // Regression guard. The embedded example pack must give each bucket
+    // a different name pool. If buckets ever collapse to identical files
+    // (as a lazy placeholder would), the per-bucket and weighting tests
+    // become vacuous, so assert the cross-bucket union exceeds any
+    // single bucket.
+    let reg = NameRegistry::load();
+    let single = reg.first_names(NationalityBucket::American).len();
+    let union: std::collections::BTreeSet<String> = NationalityBucket::ALL
+        .iter()
+        .flat_map(|&b| reg.first_names(b).into_iter().map(str::to_string))
+        .collect();
+    assert!(
+        union.len() > single,
+        "buckets share one pool ({} unique across all vs {} per bucket); \
+         the example pack must give buckets distinct names",
+        union.len(),
+        single
+    );
+}
+
+#[test]
 fn roll_produces_first_last_format() {
     let reg = NameRegistry::load();
     let mut rng = ChaCha8Rng::seed_from_u64(1234);

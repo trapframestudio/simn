@@ -1,20 +1,4 @@
-# Generic example names (override via content overlay).
-Alex
-Sam
-Jordan
-Casey
-Taylor
-Morgan
-Riley
-Jamie
-Avery
-Quinn
-Drew
-Skyler
-Reese
-Rowan
-Sage
-Devon
+# Generic example names (override per game via a content overlay).
 Hayden
 Kendall
 Logan
@@ -33,3 +17,17 @@ Oakley
 Phoenix
 Remy
 Shay
+Blair
+Corey
+Dana
+Eden
+Frankie
+Glenn
+Harper
+Indie
+Jules
+Kit
+Lee
+Micah
+Nico
+Ollie

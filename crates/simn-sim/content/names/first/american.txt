@@ -1,4 +1,4 @@
-# Generic example names (override via content overlay).
+# Generic example names (override per game via a content overlay).
 Alex
 Sam
 Jordan
@@ -31,5 +31,3 @@ Marlowe
 Noel
 Oakley
 Phoenix
-Remy
-Shay

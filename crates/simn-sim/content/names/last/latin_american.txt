@@ -1,8 +1,4 @@
-# Generic example names (override via content overlay).
-Carter
-Reyes
-Novak
-Sato
+# Generic example names (override per game via a content overlay).
 Khan
 Mbeki
 Fischer
@@ -33,3 +29,5 @@ Brandt
 Karim
 Hughes
 Vega
+Kovac
+Lim
