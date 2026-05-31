@@ -7,7 +7,7 @@
 //!
 //! Format:
 //! ```text
-//! [8]   magic: b"NSPHSAVE"
+//! [8]   magic: b"SIMNSAVE"
 //! [4]   version: u32 LE
 //! [8]   tick: u64 LE
 //! [4]   body_len: u32 LE
@@ -78,7 +78,7 @@ pub struct SerializedEntity {
     #[serde(default)]
     pub world_container: Option<WorldContainer>,
     /// Faction allegiance, persisted as a registry **name string**
-    /// (`"pwa"`, `"linemen"`) so saves remain valid across registry
+    /// (`"coalition"`, `"coalition_vanguard"`) so saves remain valid across registry
     /// edits. `None` for entities without a `Faction` (most
     /// containers, the player). Loaders resolve to a `FactionId`
     /// against the active registry.

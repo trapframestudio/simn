@@ -28,7 +28,7 @@
 //!
 //! ```text
 //! (faction, tier, family) → (faction, 1, family) →
-//! ("wanderers", tier, family) → ("wanderers", 1, family) → empty
+//! ("nomads", tier, family) → ("nomads", 1, family) → empty
 //! ```
 
 use bevy_ecs::prelude::Resource;
@@ -112,7 +112,7 @@ impl LootPoolRegistry {
     /// A missing or malformed file yields an empty registry — callers
     /// treat "no pool" as "no loot" rather than panicking sim init.
     fn parse_pools(src: &crate::ContentSource) -> Vec<LootPool> {
-        match src.read_str_opt("items/loot_pools.toml") {
+        match src.read_str_opt("loot/loot_pools.toml") {
             Ok(Some(text)) => match toml::from_str::<Wire>(&text) {
                 Ok(wire) => wire.pools,
                 Err(e) => {
@@ -150,14 +150,14 @@ impl LootPoolRegistry {
                 return Some(p);
             }
         }
-        // Wanderers at the requested tier.
-        if faction != "wanderers" {
-            if let Some(p) = self.find_exact("wanderers", depth_tier, family) {
+        // Nomads at the requested tier.
+        if faction != "nomads" {
+            if let Some(p) = self.find_exact("nomads", depth_tier, family) {
                 return Some(p);
             }
-            // Wanderers tier 1 — the floor.
+            // Nomads tier 1 — the floor.
             if depth_tier != 1 {
-                if let Some(p) = self.find_exact("wanderers", 1, family) {
+                if let Some(p) = self.find_exact("nomads", 1, family) {
                     return Some(p);
                 }
             }

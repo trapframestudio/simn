@@ -155,7 +155,7 @@ impl Sim {
         // Mint id + roll contents.
         let id = self.world.resource_mut::<ContainerIdCounter>().mint();
         let mut grid = GridInventory::new(kind.grid.w, kind.grid.h);
-        let roll_faction = faction.clone().unwrap_or_else(|| "wanderers".to_string());
+        let roll_faction = faction.clone().unwrap_or_else(|| "nomads".to_string());
         let _placed = crate::world_seed::roll_initial_container_contents(
             &mut grid,
             &kind,

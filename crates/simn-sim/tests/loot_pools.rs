@@ -4,7 +4,7 @@
 //! - Registry parses the shipped TOML without errors.
 //! - `lookup` finds exact entries and falls back through
 //!   `(faction, tier, family) → (faction, 1, family) →
-//!   (wanderers, tier, family) → (wanderers, 1, family)`.
+//!   (nomads, tier, family) → (nomads, 1, family)`.
 //! - `roll_one` produces items inside the configured weight band
 //!   over a 1000-iteration sample.
 //! - `roll_quest_reward` with K=5 skews the distribution toward
@@ -24,9 +24,9 @@ fn pool_registry_loads_with_pwa_bandits_wanderers_attuned() {
     let r = LootPoolRegistry::load();
     assert!(!r.is_empty(), "loot_pools.toml should have pools");
     // Sanity: every shipped (faction, tier 1) × family combo must
-    // resolve to a pool (either directly or via wanderers
+    // resolve to a pool (either directly or via nomads
     // fallback).
-    for faction in ["pwa", "bandits", "wanderers", "attuned"] {
+    for faction in ["coalition", "raiders", "nomads", "the_order"] {
         for family in [
             "weapons",
             "magazines",
@@ -57,32 +57,36 @@ fn pool_registry_loads_with_pwa_bandits_wanderers_attuned() {
 #[test]
 fn lookup_falls_back_to_wanderers_on_unknown_faction() {
     let r = LootPoolRegistry::load();
-    // `pwa` knows about `weapons`. `mod_a` doesn't exist; fallback
-    // resolves to wanderers tier 1.
-    let pwa = r.lookup("pwa", 1, "weapons").expect("pwa weapons present");
+    // `coalition` knows about `weapons`. `mod_a` doesn't exist; fallback
+    // resolves to nomads tier 1.
+    let coalition = r
+        .lookup("coalition", 1, "weapons")
+        .expect("coalition weapons present");
     let unknown = r
         .lookup("a_mod_faction_we_dont_have", 1, "weapons")
         .expect("fallback should resolve");
-    assert_eq!(unknown.faction, "wanderers");
-    assert_ne!(pwa.faction, unknown.faction);
+    assert_eq!(unknown.faction, "nomads");
+    assert_ne!(coalition.faction, unknown.faction);
 }
 
 #[test]
 fn lookup_falls_back_to_tier_1_within_faction() {
     let r = LootPoolRegistry::load();
-    // tier 2 isn't shipped for pwa weapons; should fall back to pwa
-    // tier 1 (NOT wanderers tier 2 / 1).
+    // tier 2 isn't shipped for coalition weapons; should fall back to coalition
+    // tier 1 (NOT nomads tier 2 / 1).
     let resolved = r
-        .lookup("pwa", 2, "weapons")
+        .lookup("coalition", 2, "weapons")
         .expect("fallback should resolve");
-    assert_eq!(resolved.faction, "pwa");
+    assert_eq!(resolved.faction, "coalition");
     assert_eq!(resolved.depth_tier, 1);
 }
 
 #[test]
 fn roll_one_distribution_tracks_weights_within_tolerance() {
     let r = LootPoolRegistry::load();
-    let pool = r.lookup("pwa", 1, "ammo").expect("pwa ammo pool exists");
+    let pool = r
+        .lookup("coalition", 1, "ammo")
+        .expect("coalition ammo pool exists");
     let total_w: u32 = pool.entries.iter().map(|e| e.weight).sum();
 
     let mut rng = ChaCha8Rng::seed_from_u64(99);
@@ -90,7 +94,7 @@ fn roll_one_distribution_tracks_weights_within_tolerance() {
     let n: u32 = 5000;
     for _ in 0..n {
         let item = r
-            .roll_one(&mut rng, "pwa", 1, "ammo")
+            .roll_one(&mut rng, "coalition", 1, "ammo")
             .expect("non-empty pool");
         *counts.entry(item.id.0.clone()).or_default() += 1;
     }
@@ -114,7 +118,9 @@ fn roll_one_distribution_tracks_weights_within_tolerance() {
 #[test]
 fn quest_reward_bias_skews_toward_rare_entries() {
     let r = LootPoolRegistry::load();
-    let pool = r.lookup("pwa", 1, "ammo").expect("pwa ammo pool exists");
+    let pool = r
+        .lookup("coalition", 1, "ammo")
+        .expect("coalition ammo pool exists");
     // Pick the rarest (lowest-weight) entry id for the assertion.
     let rare = pool
         .entries
@@ -130,7 +136,9 @@ fn quest_reward_bias_skews_toward_rare_entries() {
     let mut rng = ChaCha8Rng::seed_from_u64(42);
     let mut k1_rare = 0u32;
     for _ in 0..n {
-        let item = r.roll_quest_reward(&mut rng, "pwa", 1, "ammo", 1).unwrap();
+        let item = r
+            .roll_quest_reward(&mut rng, "coalition", 1, "ammo", 1)
+            .unwrap();
         if item.id.0 == rare {
             k1_rare += 1;
         }
@@ -140,7 +148,9 @@ fn quest_reward_bias_skews_toward_rare_entries() {
     let mut rng = ChaCha8Rng::seed_from_u64(42);
     let mut k5_rare = 0u32;
     for _ in 0..n {
-        let item = r.roll_quest_reward(&mut rng, "pwa", 1, "ammo", 5).unwrap();
+        let item = r
+            .roll_quest_reward(&mut rng, "coalition", 1, "ammo", 5)
+            .unwrap();
         if item.id.0 == rare {
             k5_rare += 1;
         }

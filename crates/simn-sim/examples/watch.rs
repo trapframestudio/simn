@@ -1,15 +1,15 @@
 //! Headless NPC-behavior watcher.
 //!
 //! Spins up a fresh `Sim` in a temp dir, enables `BehaviorLog`, and
-//! ticks at wall-clock 20Hz for `NSPH_WATCH_SECONDS` (default 30),
+//! ticks at wall-clock 20Hz for `SIMN_WATCH_SECONDS` (default 30),
 //! streaming human-readable NPC events to stdout. Prints a summary
-//! line every `NSPH_WATCH_SUMMARY_TICKS` (default 100) ticks.
+//! line every `SIMN_WATCH_SUMMARY_TICKS` (default 100) ticks.
 //!
 //! Run:
 //!
 //! ```bash
 //! cargo run --example watch -p simn-sim
-//! NSPH_WATCH_SECONDS=120 cargo run --example watch -p simn-sim
+//! SIMN_WATCH_SECONDS=120 cargo run --example watch -p simn-sim
 //! RUST_LOG=npc.behavior=info cargo run --example watch -p simn-sim
 //! ```
 //!
@@ -30,11 +30,11 @@ fn main() -> anyhow::Result<()> {
         .without_time()
         .init();
 
-    let seconds: u64 = std::env::var("NSPH_WATCH_SECONDS")
+    let seconds: u64 = std::env::var("SIMN_WATCH_SECONDS")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(30);
-    let summary_every: u64 = std::env::var("NSPH_WATCH_SUMMARY_TICKS")
+    let summary_every: u64 = std::env::var("SIMN_WATCH_SUMMARY_TICKS")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(100);

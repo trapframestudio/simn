@@ -5,7 +5,7 @@
 # Schema: see `EquipmentSlotDef` / `SlotPosition` / `SlotSize` in
 # `crates/simn-sim/src/items.rs`.
 #
-# Layout: STALKER / Tarkov-style. 8 cols × 7 rows of doll cells.
+# Layout: grid-based. 8 cols × 7 rows of doll cells.
 # Slots have a `size = { w, h }` footprint so wide/tall items get
 # rectangles that match — a primary rifle reads as a 3×1
 # horizontal slot, an armor vest as a 2×2 chest piece, the
@@ -71,7 +71,7 @@ size = { w = 1, h = 4 }
 
 # ----------------------------- Weapons --------------------------------
 #
-# STALKER-style loadout: two long-gun slots (primary + secondary) plus
+# classic loadout: two long-gun slots (primary + secondary) plus
 # a sidearm pistol and a melee item. A single `weapon_primary` or
 # `weapon_secondary` category covers both long-gun slots — items
 # pinning themselves to only one set `equip_slots = ["primary"]` or

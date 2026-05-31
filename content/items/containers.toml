@@ -4,8 +4,8 @@
 # equipping it exposes a nested grid of those dimensions. Size (`size`)
 # is the FOOTPRINT the container takes on whatever grid it's sitting
 # in; `inner_grid` is the capacity it provides. A backpack is small
-# in pockets (1x1, Tarkov-ish abstraction — PR-3 tunes the footprints
-# against real-world scale) but exposes a big inner grid.
+# in pockets (1x1 abstraction — PR-3 tunes the footprints against
+# real-world scale) but exposes a big inner grid.
 #
 # `equip_slots` is the strict whitelist: even though a backpack is
 # category=backpack, listing the slot explicitly documents intent and

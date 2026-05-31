@@ -5,7 +5,7 @@
 # chances roll once per spawn against the squad RNG.
 #
 # These are deliberately modest — corpses should reward looting without
-# trivializing economy. PWA / Federal / RevereGuard get a bandage and
+# trivializing economy. Coalition / Directorate / Homesteaders get a bandage and
 # a ration on top of their basic kit; Looters carry junk for salvage;
 # Wanderers carry almost nothing. Faction-specific high-tier kits
 # (gunsmith, drug-making) are NOT in baseline loadouts — those drop
@@ -16,7 +16,7 @@
 # Unknown ids fail loud at startup so authoring errors don't ship.
 
 [[loadouts]]
-faction = "pwa"
+faction = "coalition"
 rolls = [
     { id = "bandage", count = 2, chance = 1.0 },
     { id = "preserved_ration", count = 1, chance = 1.0 },
@@ -24,7 +24,7 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "linemen"
+faction = "coalition_vanguard"
 rolls = [
     { id = "bandage", count = 2, chance = 1.0 },
     { id = "field_ration", count = 1, chance = 1.0 },
@@ -33,7 +33,7 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "revere_guard"
+faction = "homesteaders"
 rolls = [
     { id = "bandage", count = 2, chance = 1.0 },
     { id = "preserved_ration", count = 1, chance = 1.0 },
@@ -41,7 +41,7 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "federal"
+faction = "directorate"
 rolls = [
     { id = "bandage", count = 2, chance = 1.0 },
     { id = "field_ration", count = 1, chance = 1.0 },
@@ -49,7 +49,7 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "gulf_compact"
+faction = "syndicate"
 rolls = [
     { id = "energy_bar", count = 2, chance = 1.0 },
     { id = "clean_water", count = 1, chance = 1.0 },
@@ -66,7 +66,7 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "noosphere_worshippers"
+faction = "the_order"
 rolls = [
     { id = "dirty_water", count = 1, chance = 1.0 },
     { id = "contaminated_food", count = 1, chance = 0.6 },
@@ -84,15 +84,15 @@ rolls = [
 ]
 
 [[loadouts]]
-faction = "wanderers"
+faction = "nomads"
 rolls = [
     { id = "dirty_water", count = 1, chance = 0.6 },
     { id = "frayed_boots", count = 1, chance = 0.3 },
 ]
 
 [[loadouts]]
-faction = "merged"
-# The Merged are endgame antagonists — never seeded randomly, but if
+faction = "the_afflicted"
+# The Afflicted are endgame antagonists — never seeded randomly, but if
 # one ever ends up looted, the player should get something distinctive.
 rolls = [
     { id = "anti_rad", count = 2, chance = 1.0 },

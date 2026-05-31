@@ -41,9 +41,11 @@ another engine over FFI.
 Your game's content doesn't get baked into the engine. It flows through
 `simn_sim::ContentSource`, which has three modes:
 
-* `Embedded` is the generic example pack under `crates/simn-sim/content/`,
-  compiled in so the engine runs and tests on its own with zero external
-  files. It's open source and carries no proprietary game content.
+* `Embedded` is the generic example pack at the repo-root `content/`
+  folder (organized by concern: `factions/`, `items/`, `loot/`,
+  `crafting/`, `combat/`, `ai/`, `world/`, `poi/`, `names/`), compiled in
+  so the engine runs and tests on its own with zero external files. It's
+  open source and carries no proprietary game content.
 * `Dir(path)` is a complete content directory on disk.
 * `Overlay(path)` layers on-disk files over the embedded base, and missing
   files fall back to embedded. So a game ships only the files it actually

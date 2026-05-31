@@ -1,0 +1,585 @@
+# Example faction registry (generic). Demonstrates the schema; ships
+# with SIMN so the sim runs standalone. A consuming game overrides
+# this file (and chatter/names) via a ContentSource overlay.
+#
+# Keys, relations, archetypes, and nationality weights are mechanical
+# and reusable; display strings are derived from the key.
+
+default_relation = "neutral"
+player_baseline = "nomads"
+
+[[faction]]
+name = "coalition"
+display = "Coalition"
+road_friendly = true
+base_aggression = 0.60
+default_loadout = "coalition_basic"
+debug_color = [0xCC, 0xCC, 0x33]
+archetype = "disciplined"
+squad_size = { min = 4, max = 5 }
+combat = { shoot = 1.5, advance = 4.5, move_to_cover = 0.8, peek = 0.8, flank = 2.5, suppress = 1.5, retreat = 5.0, reload = 1.5, heal_ally = 1.5 }
+base_kinds = [ { kind = "Checkpoint", weight = 5 }, { kind = "Outpost", weight = 3 }, { kind = "Headquarters", weight = 1 } ]
+[faction.nationality_weights]
+american = 8
+east_asian = 3
+latin_american = 3
+western_european = 2
+slavic = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "coalition_vanguard"
+parent = "coalition"
+display = "Coalition Vanguard"
+road_friendly = true
+base_aggression = 0.85
+default_loadout = "coalition_vanguard_basic"
+debug_color = [0xFF, 0xCC, 0x00]
+archetype = "aggressive"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.5, advance = 4.5, move_to_cover = 0.8, peek = 0.8, flank = 2.5, suppress = 1.5, retreat = 5.0, reload = 1.5, heal_ally = 1.5 }
+base_kinds = [ { kind = "Checkpoint", weight = 6 }, { kind = "Headquarters", weight = 2 } ]
+[faction.nationality_weights]
+american = 6
+western_european = 2
+latin_american = 2
+slavic = 1
+east_asian = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "homesteaders"
+display = "Homesteaders"
+road_friendly = true
+base_aggression = 0.70
+default_loadout = "homesteaders_basic"
+debug_color = [0x99, 0x33, 0x33]
+archetype = "disciplined"
+squad_size = { min = 3, max = 5 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+base_kinds = [ { kind = "Safehouse", weight = 4 }, { kind = "Outpost", weight = 2 }, { kind = "Checkpoint", weight = 1 } ]
+[faction.nationality_weights]
+american = 14
+western_european = 2
+latin_american = 1
+slavic = 1
+
+[[faction]]
+name = "directorate"
+display = "Directorate"
+road_friendly = true
+base_aggression = 0.75
+default_loadout = "directorate_basic"
+debug_color = [0x33, 0x33, 0x99]
+archetype = "disciplined"
+squad_size = { min = 4, max = 5 }
+combat = { shoot = 1.5, advance = 4.0, move_to_cover = 0.8, peek = 0.8, flank = 2.0, suppress = 1.0, retreat = 4.0, reload = 1.5, heal_ally = 1.5 }
+base_kinds = [ { kind = "ResearchPost", weight = 5 }, { kind = "Outpost", weight = 2 }, { kind = "Safehouse", weight = 1 } ]
+[faction.nationality_weights]
+american = 10
+western_european = 2
+west_african = 2
+latin_american = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+middle_eastern = 1
+
+[[faction]]
+name = "directorate_recon"
+parent = "directorate"
+display = "Directorate Recon"
+road_friendly = false
+base_aggression = 0.90
+default_loadout = "directorate_recon_basic"
+debug_color = [0x22, 0x22, 0x44]
+archetype = "disciplined"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.5, advance = 4.0, move_to_cover = 0.8, peek = 0.8, flank = 2.0, suppress = 1.0, retreat = 4.0, reload = 1.5, heal_ally = 1.5 }
+[faction.nationality_weights]
+american = 14
+western_european = 2
+west_african = 1
+latin_american = 1
+slavic = 1
+east_asian = 1
+
+[[faction]]
+name = "syndicate"
+display = "Syndicate"
+road_friendly = true
+base_aggression = 0.60
+default_loadout = "syndicate_basic"
+debug_color = [0x66, 0x99, 0xCC]
+archetype = "greedy"
+squad_size = { min = 2, max = 4 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+base_kinds = [ { kind = "Safehouse", weight = 2 }, { kind = "Outpost", weight = 2 } ]
+[faction.nationality_weights]
+american = 8
+latin_american = 5
+western_european = 2
+middle_eastern = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+west_african = 1
+
+[[faction]]
+name = "syndicate_enforcers"
+parent = "syndicate"
+display = "Syndicate Enforcers"
+road_friendly = true
+base_aggression = 0.85
+default_loadout = "syndicate_enforcers_basic"
+debug_color = [0x33, 0x66, 0x99]
+archetype = "greedy"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+[faction.nationality_weights]
+american = 8
+latin_american = 5
+western_european = 2
+middle_eastern = 2
+east_asian = 1
+slavic = 1
+south_asian = 1
+west_african = 1
+
+[[faction]]
+name = "consortium"
+display = "Consortium"
+road_friendly = true
+base_aggression = 0.65
+default_loadout = "consortium_basic"
+debug_color = [0x00, 0x99, 0x99]
+archetype = "disciplined"
+squad_size = { min = 4, max = 5 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+base_kinds = [ { kind = "ResearchPost", weight = 5 }, { kind = "Outpost", weight = 2 }, { kind = "Safehouse", weight = 1 } ]
+[faction.nationality_weights]
+american = 6
+east_asian = 5
+western_european = 3
+south_asian = 2
+latin_american = 1
+slavic = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "consortium_recovery"
+parent = "consortium"
+display = "Consortium Recovery"
+road_friendly = false
+base_aggression = 0.85
+default_loadout = "consortium_recovery_basic"
+debug_color = [0x00, 0x66, 0x66]
+archetype = "disciplined"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.5, advance = 4.0, move_to_cover = 0.8, peek = 0.8, flank = 2.0, suppress = 1.0, retreat = 4.0, reload = 1.5, heal_ally = 1.5 }
+[faction.nationality_weights]
+american = 8
+east_asian = 3
+western_european = 2
+south_asian = 1
+latin_american = 1
+slavic = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "the_order"
+display = "The Order"
+road_friendly = false
+base_aggression = 0.55
+default_loadout = "the_order_basic"
+debug_color = [0x99, 0x00, 0x66]
+archetype = "reverent"
+squad_size = { min = 3, max = 5 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+base_kinds = [ { kind = "Safehouse", weight = 5 }, { kind = "Outpost", weight = 1 } ]
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "order_devout"
+parent = "the_order"
+display = "Order Devout"
+road_friendly = false
+base_aggression = 0.80
+default_loadout = "order_devout_basic"
+debug_color = [0xCC, 0x33, 0x99]
+archetype = "reverent"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "the_afflicted"
+display = "The Afflicted"
+road_friendly = false
+base_aggression = 0.95
+default_loadout = "the_afflicted_basic"
+debug_color = [0xCC, 0x00, 0xCC]
+archetype = "aggressive"
+squad_size = { min = 1, max = 1 }
+combat = { shoot = 0.5, advance = 1.0, move_to_cover = 5.0, peek = 4.0, flank = 1.5, suppress = 3.0, retreat = 10.0, reload = 1.0, heal_ally = 5.0 }
+base_kinds = [ { kind = "Headquarters", weight = 1 } ]
+[faction.nationality_weights]
+american = 4
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 2
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "raiders"
+display = "Raiders"
+road_friendly = false
+base_aggression = 0.65
+default_loadout = "raiders_basic"
+debug_color = [0x66, 0x33, 0x00]
+archetype = "greedy"
+squad_size = { min = 3, max = 5 }
+combat = { shoot = 1.2, advance = 2.5, move_to_cover = 2.0, peek = 2.0, flank = 1.5, suppress = 3.0, retreat = 2.0, reload = 2.0, heal_ally = 4.0 }
+base_kinds = [ { kind = "Outpost", weight = 4 }, { kind = "Safehouse", weight = 1 } ]
+[faction.nationality_weights]
+american = 8
+latin_american = 2
+slavic = 2
+western_european = 1
+east_asian = 1
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "looters"
+parent = "raiders"
+display = "Looters"
+road_friendly = false
+base_aggression = 0.70
+default_loadout = "looters_basic"
+debug_color = [0x88, 0x44, 0x22]
+archetype = "greedy"
+squad_size = { min = 3, max = 5 }
+combat = { shoot = 1.2, advance = 2.5, move_to_cover = 2.0, peek = 2.0, flank = 1.5, suppress = 3.0, retreat = 2.0, reload = 2.0, heal_ally = 4.0 }
+[faction.nationality_weights]
+american = 8
+latin_american = 2
+slavic = 2
+western_european = 1
+east_asian = 1
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[faction]]
+name = "smugglers"
+parent = "raiders"
+display = "Smugglers"
+road_friendly = false
+base_aggression = 0.75
+default_loadout = "smugglers_basic"
+debug_color = [0x99, 0x55, 0x11]
+archetype = "aggressive"
+squad_size = { min = 3, max = 4 }
+combat = { shoot = 1.0, advance = 3.0, move_to_cover = 2.0, peek = 1.5, flank = 3.0, suppress = 2.5, retreat = 4.0, reload = 2.0, heal_ally = 2.5 }
+[faction.nationality_weights]
+latin_american = 7
+american = 2
+western_european = 1
+slavic = 1
+east_asian = 1
+south_asian = 1
+west_african = 1
+middle_eastern = 1
+
+[[faction]]
+name = "nomads"
+display = "Nomads"
+road_friendly = false
+base_aggression = 0.30
+default_loadout = "nomads_basic"
+debug_color = [0xAA, 0xAA, 0xAA]
+archetype = "curious"
+squad_size = { min = 1, max = 3 }
+combat = { shoot = 2.0, advance = 5.0, move_to_cover = 1.0, peek = 1.5, flank = 4.0, suppress = 5.0, retreat = 0.8, reload = 2.0, heal_ally = 3.0 }
+base_kinds = [ { kind = "Safehouse", weight = 5 }, { kind = "Outpost", weight = 1 } ]
+[faction.nationality_weights]
+american = 5
+latin_american = 2
+east_asian = 2
+slavic = 2
+western_european = 2
+west_african = 1
+middle_eastern = 1
+south_asian = 1
+
+[[relation]]
+a = "coalition"
+b = "coalition_vanguard"
+value = "warm"
+
+[[relation]]
+a = "coalition"
+b = "homesteaders"
+value = "hostile"
+
+[[relation]]
+a = "coalition"
+b = "directorate"
+value = "cold"
+
+[[relation]]
+a = "coalition"
+b = "syndicate"
+value = "neutral"
+
+[[relation]]
+a = "coalition"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "coalition"
+b = "the_order"
+value = "cold"
+
+[[relation]]
+a = "coalition"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "coalition"
+b = "consortium"
+value = "cold"
+
+[[relation]]
+a = "coalition_vanguard"
+b = "syndicate"
+value = "hostile"
+
+[[relation]]
+a = "coalition_vanguard"
+b = "the_order"
+value = "hostile"
+
+[[relation]]
+a = "coalition_vanguard"
+b = "consortium"
+value = "hostile"
+
+[[relation]]
+a = "coalition_vanguard"
+b = "nomads"
+value = "cold"
+
+[[relation]]
+a = "homesteaders"
+b = "directorate"
+value = "cold"
+
+[[relation]]
+a = "homesteaders"
+b = "syndicate"
+value = "warm"
+
+[[relation]]
+a = "homesteaders"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "homesteaders"
+b = "the_order"
+value = "hostile"
+
+[[relation]]
+a = "homesteaders"
+b = "raiders"
+value = "cold"
+
+[[relation]]
+a = "homesteaders"
+b = "consortium"
+value = "cold"
+
+[[relation]]
+a = "directorate"
+b = "syndicate"
+value = "cold"
+
+[[relation]]
+a = "directorate"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "directorate"
+b = "the_order"
+value = "cold"
+
+[[relation]]
+a = "directorate"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "directorate"
+b = "consortium"
+value = "cold"
+
+[[relation]]
+a = "directorate_recon"
+b = "the_order"
+value = "hostile"
+
+[[relation]]
+a = "directorate_recon"
+b = "consortium"
+value = "hostile"
+
+[[relation]]
+a = "syndicate"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "syndicate"
+b = "the_order"
+value = "cold"
+
+[[relation]]
+a = "syndicate"
+b = "raiders"
+value = "cold"
+
+[[relation]]
+a = "syndicate"
+b = "consortium"
+value = "warm"
+
+[[relation]]
+a = "syndicate_enforcers"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "syndicate_enforcers"
+b = "smugglers"
+value = "neutral"
+
+[[relation]]
+a = "consortium"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "consortium"
+b = "the_order"
+value = "hostile"
+
+[[relation]]
+a = "consortium"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "consortium_recovery"
+b = "nomads"
+value = "cold"
+
+[[relation]]
+a = "the_order"
+b = "the_afflicted"
+value = "hostile"
+
+[[relation]]
+a = "the_order"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "the_order"
+b = "nomads"
+value = "neutral"
+
+[[relation]]
+a = "order_devout"
+b = "nomads"
+value = "cold"
+
+[[relation]]
+a = "order_devout"
+b = "coalition"
+value = "hostile"
+
+[[relation]]
+a = "order_devout"
+b = "directorate"
+value = "hostile"
+
+[[relation]]
+a = "order_devout"
+b = "syndicate"
+value = "hostile"
+
+[[relation]]
+a = "order_devout"
+b = "homesteaders"
+value = "hostile"
+
+[[relation]]
+a = "the_afflicted"
+b = "raiders"
+value = "hostile"
+
+[[relation]]
+a = "the_afflicted"
+b = "nomads"
+value = "hostile"
+
+[[relation]]
+a = "raiders"
+b = "nomads"
+value = "hostile"
+
+[[relation]]
+a = "looters"
+b = "consortium"
+value = "hostile"
+
+[[relation]]
+a = "smugglers"
+b = "syndicate"
+value = "neutral"
+
+[[relation]]
+a = "smugglers"
+b = "consortium"
+value = "cold"

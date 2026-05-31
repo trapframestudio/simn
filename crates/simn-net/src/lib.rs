@@ -1,4 +1,4 @@
-//! Noosphere networking core.
+//! SIMN networking core.
 //!
 //! Listen-server peer-to-peer session over Steam Networking. Pure Rust,
 //! engine-agnostic. The `simn-godot` crate wraps [`NetSession`] in a

@@ -15,7 +15,7 @@
 use bevy_ecs::prelude::{Entity, Query, Res, ResMut, With};
 use std::collections::HashMap;
 
-use crate::components::{Base, BaseKind, Health, InFaction, InRegion, Npc, Position};
+use crate::components::{Base, Health, InFaction, InRegion, Npc, Position};
 use crate::faction::registry::{FactionId, FactionRegistry, RelationDeltas};
 use crate::helpers::quantize_post_pos;
 use crate::resources::{ActiveRegions, GuardPosts, SimClock};
@@ -84,7 +84,7 @@ pub fn base_capture_check(
         if !active_regions.is_active(base_region.0) {
             continue;
         }
-        if matches!(base.kind, BaseKind::Headquarters) {
+        if crate::poi::base_is_victory_target(base.kind) {
             continue;
         }
         let owner = base_faction.0;

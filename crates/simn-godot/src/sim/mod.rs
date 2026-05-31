@@ -989,7 +989,7 @@ impl SimHost {
     ///   `"Outpost"`, `"Safehouse"`, `"Headquarters"`,
     ///   `"ResearchPost"`, or `"CampSite"`. Unknown strings warn +
     ///   return `false`.
-    /// - `faction`: name from `factions.toml`. `"wanderers"` for
+    /// - `faction`: name from `factions.toml`. `"nomads"` for
     ///   neutral camp sites. Unknown strings warn + return `false`.
     ///
     /// Returns `true` on success. The sim's
@@ -2266,7 +2266,7 @@ impl SimHost {
     ///   roll RNG so same-marker same-roll within a save. Empty =
     ///   non-deterministic mix from `(tick, kind_id)`.
     /// - `faction` — owning faction for restock / loot flavor;
-    ///   empty = `"wanderers"` neutral fallback.
+    ///   empty = `"nomads"` neutral fallback.
     /// - `depth_tier` — 1 / 2 / 3.
     /// - `interaction_mode` — `"openable"` (default) or
     ///   `"breakable"`. Breakable is data-only until the future
@@ -3560,7 +3560,7 @@ impl SimHost {
     /// ticks (200 samples at 20 Hz). All zeros before the first tick
     /// completes. **Use case**: hook this to a debug HUD label or
     /// query via `execute_game_script` to chase a slow-tick
-    /// regression without needing `NSPH_VERBOSE=1`.
+    /// regression without needing `SIMN_VERBOSE=1`.
     #[func]
     fn tick_perf(&self) -> Dictionary<Variant, Variant> {
         let perf = if let Some(worker) = self.worker.as_ref() {

@@ -155,7 +155,7 @@ pub struct NpcView {
     pub combat_stance: Option<&'static str>,
     /// Squad combat role. `None` when not in combat.
     pub combat_role: Option<&'static str>,
-    /// Universal STALKER-style threat tier. `None` on legacy NPCs.
+    /// Universal NPC threat tier. `None` on legacy NPCs.
     pub rank: Option<crate::components::NpcRank>,
     /// Visual pose during a dwell ("standing" | "sitting" | "crouching"),
     /// or `None` when the NPC is not in a dwell state. Renderers use
@@ -186,7 +186,7 @@ pub struct BaseView {
 /// Per-segment tick duration breakdown. Recorded each tick and
 /// surfaced via [`Sim::recent_tick_perf`] so the bridge can show
 /// which system group is eating the budget without needing
-/// `NSPH_VERBOSE=1`.
+/// `SIMN_VERBOSE=1`.
 #[derive(Clone, Copy, Default, Debug)]
 pub struct TickSegments {
     pub player: std::time::Duration,

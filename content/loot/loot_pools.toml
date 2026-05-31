@@ -16,7 +16,7 @@
 #
 # Fallback chain in `LootPoolRegistry`:
 #   (faction, tier, family) → (faction, 1, family) →
-#   ("wanderers", tier, family) → ("wanderers", 1, family) → empty
+#   ("nomads", tier, family) → ("nomads", 1, family) → empty
 #
 # `wanderers` is the neutral catch-all so any region with an
 # unknown faction still rolls plausible scavenger loot.
@@ -26,13 +26,13 @@
 # the rest of the faction roster, land as zones are authored.
 
 # =================================================================
-# PWA — Pacific Workers' Authority. Military-style: AK-pattern
+# Coalition — the Coalition state. Military-style: AK-pattern
 # rifles, milspec ammo (5.45×39, 12 gauge), proper medical kits,
 # field rations, modern armor.
 # =================================================================
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "weapons"
 entries = [
@@ -42,7 +42,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "magazines"
 entries = [
@@ -52,7 +52,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "ammo"
 entries = [
@@ -65,7 +65,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "armor"
 entries = [
@@ -75,7 +75,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "medical"
 entries = [
@@ -89,7 +89,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "food"
 entries = [
@@ -100,7 +100,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "tools"
 entries = [
@@ -111,7 +111,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "pwa"
+faction = "coalition"
 depth_tier = 1
 family = "junk"
 entries = [
@@ -129,7 +129,7 @@ entries = [
 # =================================================================
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "weapons"
 entries = [
@@ -139,7 +139,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "magazines"
 entries = [
@@ -149,7 +149,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "ammo"
 entries = [
@@ -160,7 +160,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "armor"
 entries = [
@@ -169,7 +169,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "medical"
 entries = [
@@ -181,7 +181,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "food"
 entries = [
@@ -193,7 +193,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "tools"
 entries = [
@@ -202,7 +202,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "bandits"
+faction = "raiders"
 depth_tier = 1
 family = "junk"
 entries = [
@@ -220,7 +220,7 @@ entries = [
 # =================================================================
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "weapons"
 entries = [
@@ -230,7 +230,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "magazines"
 entries = [
@@ -240,7 +240,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "ammo"
 entries = [
@@ -251,7 +251,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "armor"
 entries = [
@@ -259,7 +259,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "medical"
 entries = [
@@ -270,7 +270,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "food"
 entries = [
@@ -282,7 +282,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "tools"
 entries = [
@@ -292,7 +292,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "wanderers"
+faction = "nomads"
 depth_tier = 1
 family = "junk"
 entries = [
@@ -304,13 +304,13 @@ entries = [
 ]
 
 # =================================================================
-# Attuned — relic-hunter cult. Sparse on weapons + ammo, heavy on
-# weird junk (would be shards once the shard system lands —
+# The Order — relic-hunter cult. Sparse on weapons + ammo, heavy on
+# weird junk (would be relics in a fuller loot model —
 # stand-in entries for now), modest medical / food.
 # =================================================================
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "weapons"
 entries = [
@@ -319,7 +319,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "magazines"
 entries = [
@@ -328,7 +328,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "ammo"
 entries = [
@@ -337,7 +337,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "armor"
 entries = [
@@ -345,7 +345,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "medical"
 entries = [
@@ -356,7 +356,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "food"
 entries = [
@@ -367,7 +367,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "tools"
 entries = [
@@ -376,7 +376,7 @@ entries = [
 ]
 
 [[pool]]
-faction = "attuned"
+faction = "the_order"
 depth_tier = 1
 family = "junk"
 entries = [

@@ -12,7 +12,7 @@
 //!   doesn't fit is silently dropped — restock never bumps
 //!   existing loot out of the way.
 //!
-//! In-fiction: this models wanderers / supply squads passing
+//! In-fiction: this models nomads / supply squads passing
 //! through and stashing a few items each — not a wholesale
 //! refill. A solo-loot run still leaves enough variation between
 //! visits that backtracking through cleared regions feels

@@ -1342,7 +1342,7 @@ fn pick_objective(
     // × personality multipliers × blackboard signal multipliers ×
     // a small per-squad noise term. Without the noise, two squads
     // of the same faction with similar personality + blackboard
-    // state always pick the same kind — visually "all federal
+    // state always pick the same kind — visually "all directorate
     // squads patrol simultaneously". The noise is stable per
     // (group_id, set_at_tick) so a freshly-rolled objective doesn't
     // jitter, but distinct groups get distinct utility orderings.
@@ -1457,7 +1457,7 @@ pub enum ObjKind {
 /// Default per-faction objective weights, looked up by registry
 /// name. (Patrol, Guard, Investigate, Rest, Explore, Wander).
 /// Unknown / mod-defined factions fall back to a balanced 1/1/1/1/1/1
-/// split. Subfactions (Linemen, Choir, Cartel, …) inherit their
+/// split. Subfactions (Vanguard, Devout, Smugglers, …) inherit their
 /// parent's tuning via the registry's parent walk unless they have
 /// their own override row here. Future commit moves these onto
 /// `FactionDef` so they're configurable in `factions.toml`.
@@ -1465,21 +1465,21 @@ fn weights_for_known(name: &str) -> Option<(u32, u32, u32, u32, u32, u32)> {
     // Tuned for clearer faction identity. Tuples are
     // (Patrol, Guard, Investigate, Rest, Explore, Wander).
     match name {
-        "pwa" => Some((4, 6, 2, 3, 2, 1)),         // territorial defenders
-        "linemen" => Some((2, 8, 2, 3, 1, 0)),     // entrenched grid operators
-        "federal" => Some((2, 3, 5, 3, 2, 1)),     // investigate-heavy law enforcement
-        "ghost_teams" => Some((1, 1, 7, 2, 4, 0)), // direct-action investigators
-        "aegis_pacific" => Some((1, 2, 5, 3, 2, 1)),
-        "recovery_division" => Some((1, 1, 7, 2, 4, 0)), // hunting witnesses
-        "revere_guard" => Some((2, 1, 3, 2, 6, 1)),      // infiltrators roam hard
-        "bandits" => Some((2, 1, 3, 3, 3, 3)),           // opportunistic drifters
-        "cartel" => Some((2, 2, 3, 3, 5, 1)),            // contractor-style mobility
-        "attuned" => Some((2, 4, 2, 3, 2, 1)),
-        "choir" => Some((1, 7, 2, 3, 1, 1)), // hold sacred ground
-        "gulf_compact" => Some((2, 2, 2, 2, 5, 2)), // contractors rove
-        "registry" => Some((2, 3, 4, 2, 3, 0)), // enforcement sweeps
-        "wanderers" => Some((0, 0, 1, 3, 6, 5)), // drifters live to explore
-        "merged" => Some((0, 9, 0, 0, 0, 0)),
+        "coalition" => Some((4, 6, 2, 3, 2, 1)), // territorial defenders
+        "coalition_vanguard" => Some((2, 8, 2, 3, 1, 0)), // entrenched grid operators
+        "directorate" => Some((2, 3, 5, 3, 2, 1)), // investigate-heavy law enforcement
+        "directorate_recon" => Some((1, 1, 7, 2, 4, 0)), // direct-action investigators
+        "consortium" => Some((1, 2, 5, 3, 2, 1)),
+        "consortium_recovery" => Some((1, 1, 7, 2, 4, 0)), // hunting witnesses
+        "homesteaders" => Some((2, 1, 3, 2, 6, 1)),        // infiltrators roam hard
+        "raiders" => Some((2, 1, 3, 3, 3, 3)),             // opportunistic drifters
+        "smugglers" => Some((2, 2, 3, 3, 5, 1)),           // contractor-style mobility
+        "the_order" => Some((2, 4, 2, 3, 2, 1)),
+        "order_devout" => Some((1, 7, 2, 3, 1, 1)), // hold sacred ground
+        "syndicate" => Some((2, 2, 2, 2, 5, 2)),    // contractors rove
+        "syndicate_enforcers" => Some((2, 3, 4, 2, 3, 0)), // enforcement sweeps
+        "nomads" => Some((0, 0, 1, 3, 6, 5)),       // drifters live to explore
+        "the_afflicted" => Some((0, 9, 0, 0, 0, 0)),
         _ => None,
     }
 }

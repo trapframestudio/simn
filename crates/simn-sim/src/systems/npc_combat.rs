@@ -206,7 +206,7 @@ pub fn npc_combat(
         let _ = dist_sq;
         // Phase 4B v1: round id varies by shooter faction so
         // tracer color / impact FX / audible Gunshot bands reflect
-        // who's shooting. Bandits fire pistol-caliber, PWA fires
+        // who's shooting. Raiders fire pistol-caliber, Coalition fires
         // intermediate rifle, etc. Caliber class for the Gunshot
         // event comes from the round's authored `ammo_config`;
         // falls back to the legacy default if the registry can't

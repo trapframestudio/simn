@@ -62,12 +62,12 @@ pub struct ItemDef {
     /// cover everything lower tiers cover within the same specialty
     /// (a single `expert` kit satisfies `basic` / `advanced` / `expert`
     /// requirements). Stacking two different specialties requires two
-    /// items; the GAMMA-style progression of
+    /// items; the tiered progression of
     /// general → gunsmith / armor / weapon / drug is expressed in
     /// [`Specialty`].
     #[serde(default)]
     pub tool: Option<ToolSpec>,
-    /// Tarkov/STALKER-style grid footprint: how many cells wide × tall
+    /// grid-based grid footprint: how many cells wide × tall
     /// this item occupies in a [`crate::components::GridInventory`].
     /// Defaults to 1×1 (one cell, no rotation needed). Set explicitly
     /// for items larger than a single cell — e.g. an AK rifle is
@@ -169,12 +169,12 @@ pub struct WeaponConfig {
     /// `validate_attachment_chain` for the resolver.
     ///
     /// Defaults to empty for weapons that don't yet author
-    /// attachment data (most of the GAMMA roster pre-4C). Empty
+    /// attachment data (most of the example roster pre-4C). Empty
     /// slots = no attachments allowed.
     #[serde(default)]
     pub slots: Vec<WeaponSlot>,
     /// Phase 4D: condition lost per shot fired (in 0..100
-    /// condition units). Average GAMMA-era authoring: 0.05 per
+    /// condition units). Average baseline authoring: 0.05 per
     /// shot for milspec rifles, 0.12 for cheap pistols, 0.20+
     /// for clapped-out hand-loads. With v1's single aggregate
     /// condition, this is the whole wear model — per-part
@@ -197,7 +197,7 @@ pub struct WeaponConfig {
     /// `condition == 0` (0..1). The curve is linear from 0 at
     /// `jam_threshold` to this value at 0 condition. Default
     /// 0.18 — at fully clapped-out (cond=0) an AK still fires
-    /// 4/5 shots without jamming, in line with the GAMMA
+    /// 4/5 shots without jamming, in line with the the genre
     /// jam-economy feel. Mods may push it higher for fragile
     /// archetypes (matchlock, prototype designs).
     #[serde(default = "default_jam_chance_floor")]
@@ -766,7 +766,7 @@ pub struct SalvageOutput {
 /// A crafting recipe (spec §7.2). Inputs are consumed; outputs
 /// are produced. `required_tool` must be present by exact item id
 /// (legacy, still used by Step 4 recipes). `required_kit` is the
-/// GAMMA-style specialty+tier requirement — inventory must contain
+/// tiered specialty+tier requirement — inventory must contain
 /// at least one [`ItemDef`] with matching [`ToolSpec`] where
 /// `tier >= min_tier`. `required_context` is the
 /// crafting-station requirement: Campfire or one of the three bench
@@ -793,7 +793,7 @@ pub type RecipeContext = CraftStation;
 
 /// Crafting-station requirement: the fixed-location workspace the
 /// recipe needs. Campfire is a free-standing light source; the three
-/// bench tiers (GAMMA-style basic → advanced → expert progression)
+/// bench tiers (tiered basic → advanced → expert progression)
 /// are distinct placeable entities. Recipe checks are
 /// **cumulative**: a recipe that requires `BasicBench` is satisfied
 /// by any bench tier ≥ Basic the player is standing near; a recipe
@@ -808,7 +808,7 @@ pub enum CraftStation {
     ExpertBench,
 }
 
-/// Three-step progression matching GAMMA / Anomaly: each higher tier
+/// Three-step progression matching the survival-sandbox genre: each higher tier
 /// satisfies every lower-tier requirement within the same
 /// [`Specialty`]. Stored on both [`ToolSpec`] (the item) and
 /// [`KitRequirement`] (the recipe).
@@ -820,12 +820,12 @@ pub enum ToolTier {
     Expert,
 }
 
-/// Axes of the crafting / repair progression. Matches GAMMA's
+/// Axes of the crafting / repair progression. Matches the genre's
 /// specialty-kit ladder 1:1.
 ///
 /// - `General` — universal toolkit path (Basic/Advanced/Expert
 ///   Toolkit). Bandages, basic repairs, generic crafts, and the
-///   "craft the specialty kit" recipes sit here — in GAMMA, Advanced
+///   "craft the specialty kit" recipes sit here — in the genre, Advanced
 ///   Tools are the ingredient that crafts a Heavy Armor Repair Kit,
 ///   Expert Tools for Exosuit repair, etc. Recipes that produce a
 ///   specialty kit naturally name a `General` tier as their prereq.
@@ -841,7 +841,7 @@ pub enum ToolTier {
 /// - `DrugMaking` — antibiotics, stims, anti-rad, anti-tox, advanced
 ///   chem synthesis.
 /// - `Shards` — shard combination / upgrade / breaking (homage to
-///   GAMMA's Artefact Melter). Single-tier today; future expansion
+///   the genre's Artefact Melter). Single-tier today; future expansion
 ///   could split basic / advanced melters for rarer shard lines.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
@@ -1066,7 +1066,7 @@ impl RecipeRegistry {
 
     fn parse(src: &crate::ContentSource) -> Self {
         let raw = src
-            .read_str("recipes.toml")
+            .read_str("crafting/recipes.toml")
             .unwrap_or_else(|e| panic!("recipes content load failed: {e}"));
         let parsed: RecipesFile =
             toml::from_str(&raw).expect("recipes.toml parse failed — author error");
@@ -1143,7 +1143,7 @@ impl EquipmentSlotRegistry {
 
     fn parse(src: &crate::ContentSource) -> Self {
         let raw = src
-            .read_str("equipment_slots.toml")
+            .read_str("crafting/equipment_slots.toml")
             .unwrap_or_else(|e| panic!("equipment_slots content load failed: {e}"));
         let parsed: SlotsFile =
             toml::from_str(&raw).expect("equipment_slots.toml parse failed — author error");

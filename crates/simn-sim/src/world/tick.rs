@@ -31,14 +31,14 @@ impl Sim {
         // DIAGNOSTIC tick timer. Gated by the global verbose-logging
         // flag (see [`crate::systems::set_verbose_logging`]). Logs
         // any tick that runs >25ms (half a sim-tick budget at 20Hz)
-        // so outliers stand out. `NSPH_TICK_VERBOSE=1` additionally
+        // so outliers stand out. `SIMN_TICK_VERBOSE=1` additionally
         // logs every tick — kept as an env knob since "log every
         // tick" is a profiling concern, not a normal-play one.
-        let _diag_verbose_ticks = std::env::var("NSPH_TICK_VERBOSE").is_ok();
+        let _diag_verbose_ticks = std::env::var("SIMN_TICK_VERBOSE").is_ok();
         let _diag_start = crate::systems::is_verbose_logging().then(std::time::Instant::now);
         // Always-on rolling perf timer (cheap; ~1 µs per tick) so
         // the bridge's `tick_perf()` can report avg/p99 without
-        // requiring a process restart with `NSPH_VERBOSE=1`.
+        // requiring a process restart with `SIMN_VERBOSE=1`.
         let perf_start = std::time::Instant::now();
 
         // Five-segment schedule. Each runs sequentially in `tick()`;

@@ -186,7 +186,7 @@ fn age_kills_at_die_at_tick() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), empty_graph_with_one_region()).unwrap();
     // Set a tiny target so we get a known spawn.
-    sim.set_population_target_for_test(1, "wanderers", 1);
+    sim.set_population_target_for_test(1, "nomads", 1);
     // Phase 1A gate: activate the region so `spawn_npcs` runs there.
     sim.set_active_region(1);
     // Tick past first spawn pass.
@@ -219,7 +219,7 @@ fn recent_deaths_returns_in_order() {
     // to produce >=3 within 100 ticks. The previous `if len < 3 {
     // return }` made the whole test no-op on an under-spawn regression.
     let to_kill: Vec<_> = (0..3)
-        .map(|i| sim.spawn_npc_for_test("wanderers", 1, [i as f32 * 2.0, 0.0, 0.0], None))
+        .map(|i| sim.spawn_npc_for_test("nomads", 1, [i as f32 * 2.0, 0.0, 0.0], None))
         .collect();
     assert_eq!(to_kill.len(), 3, "test must stage exactly 3 victims");
     for id in &to_kill {
@@ -253,18 +253,20 @@ fn quiet_sim(_dir: &TempDir) -> Sim {
 fn aggro_acquired_in_sight() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
     // Under the FOV model, NPCs only acquire targets inside their
-    // forward cone. Face them toward each other: PWA yaw 0 (+X,
-    // toward bandit), bandit yaw π (-X, toward PWA).
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    // forward cone. Face them toward each other: Coalition yaw 0 (+X,
+    // toward raider), raider yaw π (-X, toward Coalition).
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
-    let a = sim.npc_aggro_for_test(pwa).expect("pwa aggroed");
-    assert_eq!(a.target, bandit);
-    let b = sim.npc_aggro_for_test(bandit).expect("bandit aggroed");
-    assert_eq!(b.target, pwa);
+    let a = sim
+        .npc_aggro_for_test(coalition)
+        .expect("coalition aggroed");
+    assert_eq!(a.target, raider);
+    let b = sim.npc_aggro_for_test(raider).expect("raider aggroed");
+    assert_eq!(b.target, coalition);
 }
 
 #[test]
@@ -272,19 +274,19 @@ fn squad_share_aggro() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 99;
-    let leader = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let mate1 = sim.spawn_npc_for_test("pwa", 1, [-3.0, 0.0, 0.0], Some(group_id));
-    let mate2 = sim.spawn_npc_for_test("pwa", 1, [3.0, 0.0, 0.0], Some(group_id));
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
-    // PWA squad faces bandit; bandit faces them back.
+    let leader = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate1 = sim.spawn_npc_for_test("coalition", 1, [-3.0, 0.0, 0.0], Some(group_id));
+    let mate2 = sim.spawn_npc_for_test("coalition", 1, [3.0, 0.0, 0.0], Some(group_id));
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    // Coalition squad faces raider; raider faces them back.
     for sid in [leader, mate1, mate2] {
         sim.set_npc_yaw_for_test(sid, 0.0);
     }
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
     for sid in [leader, mate1, mate2] {
         let a = sim.npc_aggro_for_test(sid).expect("squad member aggroed");
-        assert_eq!(a.target, bandit, "squad member should share aggro");
+        assert_eq!(a.target, raider, "squad member should share aggro");
     }
 }
 
@@ -292,24 +294,24 @@ fn squad_share_aggro() {
 fn aggro_decays_when_target_unseen() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
-    assert!(sim.npc_aggro_for_test(pwa).is_some());
-    // Move bandit to a far-away offline region; with the target
+    assert!(sim.npc_aggro_for_test(coalition).is_some());
+    // Move raider to a far-away offline region; with the target
     // out of sight, aggro should decay after `aggro.decay_ticks`
     // (configured in `behavior.toml`). Read the actual config value
     // rather than hardcoding so retuning the decay window doesn't
     // silently break this test (it did once, see 2026-05-28 fix).
-    sim.move_npc_for_test(bandit, [10000.0, 0.0, 10000.0], 2);
+    sim.move_npc_for_test(raider, [10000.0, 0.0, 10000.0], 2);
     let decay_ticks = simn_sim::BehaviorConfig::load().aggro.decay_ticks;
     for _ in 0..(decay_ticks + 10) {
         sim.tick().unwrap();
     }
     assert!(
-        sim.npc_aggro_for_test(pwa).is_none(),
+        sim.npc_aggro_for_test(coalition).is_none(),
         "aggro should have decayed after {decay_ticks}+10 ticks"
     );
 }
@@ -318,22 +320,22 @@ fn aggro_decays_when_target_unseen() {
 fn combat_kills_low_hp() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
-    // Pwa faces +X (toward bandit). Bandit also faces +X (away from
-    // pwa) so its right arm capsule sits on the *far* side of the
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
+    // Coalition faces +X (toward raider). Raider also faces +X (away from
+    // coalition) so its right arm capsule sits on the *far* side of the
     // torso from the shooter — at yaw=π the right arm rotates in
     // front of the torso and intercepts the projectile before it
-    // reaches the vital part. Bandit doesn't need to face back; pwa
+    // reaches the vital part. Raider doesn't need to face back; coalition
     // is the only shooter here.
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, 0.0);
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, 0.0);
     // Phase 4A v2: hit/miss is geometric, so pin shooter accuracy
     // at 100 (no cone-of-fire jitter) — otherwise a random
     // `NpcCharacter::roll` accuracy stat makes hit landing
     // non-deterministic.
-    sim.set_npc_accuracy_for_test(pwa, 100);
-    sim.force_npc_hp_for_test(bandit, 5.0); // one hit kills any part
+    sim.set_npc_accuracy_for_test(coalition, 100);
+    sim.force_npc_hp_for_test(raider, 5.0); // one hit kills any part
                                             // Tick enough times for npc_combat to fire (every
                                             // `FIRE_INTERVAL_TICKS = 50`) and at least one geometric
                                             // hit on head or torso to land. Phase 4A v2 made hit
@@ -342,22 +344,22 @@ fn combat_kills_low_hp() {
     for _ in 0..600 {
         sim.tick().unwrap();
         if sim
-            .chronicle_get(bandit)
+            .chronicle_get(raider)
             .and_then(|r| r.death_tick)
             .is_some()
         {
             break;
         }
     }
-    let rec = sim.chronicle_get(bandit).expect("bandit record");
-    assert!(rec.death_tick.is_some(), "bandit should have died");
+    let rec = sim.chronicle_get(raider).expect("raider record");
+    assert!(rec.death_tick.is_some(), "raider should have died");
     assert_eq!(
         rec.death_cause,
         Some(DeathCause::Combat {
-            killer_faction: "pwa".to_string(),
+            killer_faction: "coalition".to_string(),
         })
     );
-    let _ = pwa;
+    let _ = coalition;
 }
 
 #[test]
@@ -366,7 +368,7 @@ fn squad_gets_an_objective() {
     let mut sim = quiet_sim(&dir);
     let group_id = 7;
     for i in 0..4 {
-        sim.spawn_npc_for_test("pwa", 1, [i as f32 * 2.0, 0.0, 0.0], Some(group_id));
+        sim.spawn_npc_for_test("coalition", 1, [i as f32 * 2.0, 0.0, 0.0], Some(group_id));
     }
     // Tick past one planner interval (~200 ticks).
     for _ in 0..250 {
@@ -401,7 +403,7 @@ fn squad_objective_expires_and_rerolls() {
     let mut sim = quiet_sim(&dir);
     let group_id = 8;
     for i in 0..4 {
-        sim.spawn_npc_for_test("pwa", 1, [i as f32 * 2.0, 0.0, 0.0], Some(group_id));
+        sim.spawn_npc_for_test("coalition", 1, [i as f32 * 2.0, 0.0, 0.0], Some(group_id));
     }
     for _ in 0..250 {
         sim.tick().unwrap();
@@ -437,9 +439,9 @@ fn cohesion_break_triggers_regroup() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 9;
-    let leader = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    sim.spawn_npc_for_test("pwa", 1, [3.0, 0.0, 0.0], Some(group_id));
-    sim.spawn_npc_for_test("pwa", 1, [-3.0, 0.0, 0.0], Some(group_id));
+    let leader = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    sim.spawn_npc_for_test("coalition", 1, [3.0, 0.0, 0.0], Some(group_id));
+    sim.spawn_npc_for_test("coalition", 1, [-3.0, 0.0, 0.0], Some(group_id));
     // Tick once to let the index populate.
     sim.tick().unwrap();
     // Teleport the leader 200m away to break cohesion.
@@ -458,7 +460,7 @@ fn cohesion_break_triggers_regroup() {
 fn solo_npcs_get_no_squad_objective() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let _wanderer = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    let _wanderer = sim.spawn_npc_for_test("nomads", 1, [0.0, 0.0, 0.0], None);
     for _ in 0..250 {
         sim.tick().unwrap();
     }
@@ -472,17 +474,17 @@ fn solo_npcs_get_no_squad_objective() {
 fn migration_suppressed_while_aggroed() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
-    assert!(sim.npc_aggro_for_test(pwa).is_some());
+    assert!(sim.npc_aggro_for_test(coalition).is_some());
     // Tick a few hundred ticks. Even with the small migration
     // probability, an aggroed NPC should never leave the region.
     for _ in 0..1000 {
         sim.tick().unwrap();
-        let rec = sim.chronicle_get(pwa).unwrap();
+        let rec = sim.chronicle_get(coalition).unwrap();
         assert_eq!(
             rec.regions_visited.len(),
             1,
@@ -503,7 +505,7 @@ fn goal_fsm_progresses() {
     // entirely; offline-region NPCs are frozen by the active-region
     // filter in `tick_npc_goals`. The per-NPC FSM only runs for solo
     // NPCs in the active region, so this gives us a guaranteed subject.
-    let id = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("nomads", 1, [0.0, 0.0, 0.0], None);
     // Pin a far-future lifespan so the NPC cannot die of old age inside
     // the observation window — that previously counted as a "pass" even
     // though the FSM never actually left Idle.
@@ -607,13 +609,13 @@ fn offline_combat_can_kill_npcs() {
     sim.set_active_region(1);
 
     // Pick two factions that are hostile per the matrix in
-    // `crates/simn-sim/src/faction.rs`: Pwa ↔ Looters. Spawn them
+    // `crates/simn-sim/src/faction.rs`: Coalition ↔ Looters. Spawn them
     // directly as `OfflineNpc`s in region 2 — `spawn_npc_for_test`
     // mints *online* entities, which `offline_combat` (which queries
     // `&mut OfflineNpc`) doesn't see. The dedicated
     // `spawn_offline_npc_for_test` helper bypasses the projection
     // round-trip.
-    let shooter_id = sim.spawn_offline_npc_for_test("pwa", 2, [0.0, 0.0]);
+    let shooter_id = sim.spawn_offline_npc_for_test("coalition", 2, [0.0, 0.0]);
     let victim_id = sim.spawn_offline_npc_for_test("looters", 2, [20.0, 0.0]);
     // Hobble the victim to Critical so one offline combat hit
     // closes the kill (Healthy → Wounded → Critical → Dead).
@@ -648,7 +650,7 @@ fn spatial_hash_pair_iteration_finds_close_npcs() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
     sim.set_active_region(1);
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let b = sim.spawn_npc_for_test("looters", 1, [30.0, 0.0, 0.0], None);
     let _ = (a, b);
     // A few ticks for aggro to land.
@@ -673,7 +675,7 @@ fn npc_spawns_with_body_parts_full() {
     // it so the dummy HUD can render per-part HP.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let mut found = None;
     sim.each_npc(|v| {
         if v.id == id {
@@ -704,7 +706,7 @@ fn npc_spawns_with_body_parts_full() {
 fn npc_part_damage_drops_aggregate_health() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
 
     sim.apply_damage_to_npc_part(id, BodyPart::Head, 25.0)
         .unwrap();
@@ -730,7 +732,7 @@ fn npc_part_damage_drops_aggregate_health() {
 fn npc_head_zero_kills_via_death_check() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
 
     sim.apply_damage_to_npc_part(id, BodyPart::Head, 200.0)
         .unwrap();
@@ -755,7 +757,7 @@ fn set_npc_body_part_round_trips_through_journal() {
     let graph = RegionGraph::default_test_graph();
     let (id, head_before) = {
         let mut sim = Sim::new(paths(&dir), graph.clone()).unwrap();
-        let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+        let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
         sim.apply_damage_to_npc_part(id, BodyPart::Head, 5.0)
             .unwrap();
         sim.tick().unwrap();
@@ -782,7 +784,7 @@ fn set_npc_body_part_round_trips_through_journal() {
 #[test]
 fn npcs_spawn_with_faction_loadout_in_pockets() {
     // Run a real sim long enough for at least one spawn pass, then
-    // assert that PWA NPCs carry the guaranteed bandage from their
+    // assert that Coalition NPCs carry the guaranteed bandage from their
     // loadout. Reads via `each_npc` + the sim's snapshot — confirms
     // the wiring all the way through `spawn_npcs`.
     let dir = TempDir::new().unwrap();
@@ -790,21 +792,21 @@ fn npcs_spawn_with_faction_loadout_in_pockets() {
     for _ in 0..150 {
         sim.tick().unwrap();
     }
-    // Snapshot any PWA NPC's id and inspect via the snapshot path.
+    // Snapshot any Coalition NPC's id and inspect via the snapshot path.
     let pwa_faction_id = sim
         .faction_registry()
-        .id_of("pwa")
-        .expect("registry has pwa");
+        .id_of("coalition")
+        .expect("registry has coalition");
     let mut pwa_id = None;
     sim.each_npc(|v| {
         if v.faction == pwa_faction_id && pwa_id.is_none() {
             pwa_id = Some(v.id);
         }
     });
-    let id = pwa_id.expect("at least one PWA NPC after 150 ticks");
+    let id = pwa_id.expect("at least one Coalition NPC after 150 ticks");
     let items = sim
         .npc_inventory_view_for_test(id)
-        .expect("PWA NPC must have an Inventory component");
+        .expect("Coalition NPC must have an Inventory component");
     let bandage_count: u32 = items
         .iter()
         .filter(|s| s.id.0 == "bandage")
@@ -812,7 +814,7 @@ fn npcs_spawn_with_faction_loadout_in_pockets() {
         .sum();
     assert!(
         bandage_count >= 1,
-        "PWA NPC should carry the guaranteed bandage from data/npc_loadouts.toml; got {items:?}"
+        "Coalition NPC should carry the guaranteed bandage from data/npc_loadouts.toml; got {items:?}"
     );
 }
 
@@ -820,7 +822,7 @@ fn npcs_spawn_with_faction_loadout_in_pockets() {
 fn killing_an_npc_spawns_a_corpse_container_with_their_gear() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
-    let id = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 5.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 5.0], None);
     // Seed gear directly so the test doesn't depend on RNG outcomes.
     use simn_sim::ItemId;
     assert!(sim.grant_to_npc_for_test(id, &ItemId::from("bandage"), 3));
@@ -855,7 +857,7 @@ fn killing_an_npc_spawns_a_corpse_container_with_their_gear() {
 fn empty_inventory_npc_drops_no_corpse() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
-    let id = sim.spawn_npc_for_test("wanderers", 1, [0.0; 3], None);
+    let id = sim.spawn_npc_for_test("nomads", 1, [0.0; 3], None);
     // Intentionally don't grant — the test-spawn helper starts with
     // an empty Inventory regardless of faction.
     sim.upsert_player(99, 1, [0.0; 3], 0.0).unwrap();
@@ -872,7 +874,7 @@ fn corpse_loot_is_takeable_into_pockets() {
     // End-to-end: kill NPC → walk to corpse → take an item out.
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
-    let id = sim.spawn_npc_for_test("linemen", 1, [3.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition_vanguard", 1, [3.0, 0.0, 0.0], None);
     use simn_sim::ItemId;
     assert!(sim.grant_to_npc_for_test(id, &ItemId::from("bandage"), 1));
     sim.upsert_player(7, 1, [3.0, 0.0, 0.0], 0.0).unwrap();
@@ -892,17 +894,17 @@ fn arbitration_lone_npc_with_aggro_goes_individual() {
     // SquadAggro candidate).
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
     sim.tick().unwrap(); // arbitration runs after npc_aggro acquires
     let g = sim
-        .npc_active_goal_for_test(pwa)
-        .expect("pwa has ActiveGoal");
+        .npc_active_goal_for_test(coalition)
+        .expect("coalition has ActiveGoal");
     assert_eq!(g.source, GoalSource::IndividualAggro);
-    assert!(matches!(g.kind, GoalKind::PursueTarget { target } if target == bandit));
+    assert!(matches!(g.kind, GoalKind::PursueTarget { target } if target == raider));
 }
 
 #[test]
@@ -912,12 +914,12 @@ fn arbitration_grouped_npc_with_aggro_goes_squad() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 42;
-    let leader = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let mate = sim.spawn_npc_for_test("pwa", 1, [-3.0, 0.0, 0.0], Some(group_id));
-    let bandit = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
+    let leader = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate = sim.spawn_npc_for_test("coalition", 1, [-3.0, 0.0, 0.0], Some(group_id));
+    let raider = sim.spawn_npc_for_test("looters", 1, [50.0, 0.0, 0.0], None);
     sim.set_npc_yaw_for_test(leader, 0.0);
     sim.set_npc_yaw_for_test(mate, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     sim.tick().unwrap();
     sim.tick().unwrap();
     for member in [leader, mate] {
@@ -925,7 +927,7 @@ fn arbitration_grouped_npc_with_aggro_goes_squad() {
             .npc_active_goal_for_test(member)
             .expect("squad member has ActiveGoal");
         assert_eq!(g.source, GoalSource::SquadAggro);
-        assert!(matches!(g.kind, GoalKind::PursueTarget { target } if target == bandit));
+        assert!(matches!(g.kind, GoalKind::PursueTarget { target } if target == raider));
     }
 }
 
@@ -937,12 +939,12 @@ fn arbitration_idle_npc_falls_back_to_solo() {
     // bias candidate (Socialize / Hunt / etc.) that beats idle.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    sim.clear_npc_personality_for_test(pwa);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    sim.clear_npc_personality_for_test(coalition);
     sim.tick().unwrap();
     sim.tick().unwrap();
     let g = sim
-        .npc_active_goal_for_test(pwa)
+        .npc_active_goal_for_test(coalition)
         .expect("npc has ActiveGoal");
     assert_eq!(g.source, GoalSource::Idle);
     assert_eq!(g.kind, GoalKind::SoloIdleFsm);

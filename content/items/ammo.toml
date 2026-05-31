@@ -174,8 +174,8 @@ reference_energy_j = 3025.0
 
 
 # ===============================================================
-# GAMMA-roster expansion. Real-world calibers + variants for the
-# Pacific Northwest setting. Velocities calibrated to factory load
+# Example roster. Real-world calibers + variants for the
+# example setting. Velocities calibrated to factory load
 # tables (m/s); mass in grams; reference_energy_j = ½ × mass_kg ×
 # velocity². Penetration_class is 0 (HP/JHP), 1-2 (FMJ pistol),
 # 2-3 (FMJ rifle), 3-4 (AP), 5-6 (anti-materiel AP-I).

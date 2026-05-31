@@ -16,7 +16,7 @@
 //! - Spec (committed):  `tools/bakes/<map_id>.toml`
 //! - Asset output:      `godot/assets/terrain/<map_id>/{heightmap.r32, terrain.toml}`
 //! - Scene output:      `godot/scenes/maps/<map_id>.tscn` (once)
-//! - DEM cache:         `/tmp/noosphere-dem/` (auto-populated)
+//! - DEM cache:         `/tmp/simn-dem/` (auto-populated)
 
 use std::path::PathBuf;
 
@@ -49,7 +49,7 @@ fn main() -> Result<()> {
 
     let asset_dir = workspace.join(format!("godot/assets/terrain/{}", map_id));
     let scene_path = workspace.join(format!("godot/scenes/maps/{}.tscn", map_id));
-    let dem_cache = PathBuf::from("/tmp/noosphere-dem");
+    let dem_cache = PathBuf::from("/tmp/simn-dem");
 
     println!("baking {} from {}", spec.map_id, spec.source.label());
     println!(

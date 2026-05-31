@@ -26,7 +26,7 @@ use std::path::PathBuf;
 /// The example content pack compiled into the binary. Rooted at
 /// `crates/simn-sim/content/`. Files resolve as `&'static` bytes.
 static EMBEDDED_PACK: include_dir::Dir<'static> =
-    include_dir::include_dir!("$CARGO_MANIFEST_DIR/content");
+    include_dir::include_dir!("$CARGO_MANIFEST_DIR/../../content");
 
 /// Where the sim reads its content pack from. Cheap to clone (the
 /// `Dir`/`Overlay` variants hold a `PathBuf`; `Embedded` is a unit).
@@ -44,8 +44,8 @@ pub enum ContentSource {
     /// to [`ContentSource::Embedded`]. Lets a game ship only the
     /// files it overrides (e.g. its own `factions.toml`, `names/**`,
     /// `chatter_lines.toml`) and inherit all mechanics/items from the
-    /// embedded base. This is how Noosphere supplies its proprietary
-    /// creative content while SIMN ships a generic example base.
+    /// embedded base. This is how a consuming game supplies its own
+    /// proprietary creative content while SIMN ships a generic example base.
     Overlay(PathBuf),
 }
 
@@ -157,8 +157,10 @@ mod tests {
         assert_eq!(src.read_str("marker.txt").unwrap(), "OVERLAY");
 
         // Absent from the overlay → falls back to the embedded base.
-        let embedded = ContentSource::Embedded.read_str("world_time.toml").unwrap();
-        assert_eq!(src.read_str("world_time.toml").unwrap(), embedded);
+        let embedded = ContentSource::Embedded
+            .read_str("world/world_time.toml")
+            .unwrap();
+        assert_eq!(src.read_str("world/world_time.toml").unwrap(), embedded);
 
         // Absent from both → NotFound.
         assert!(matches!(

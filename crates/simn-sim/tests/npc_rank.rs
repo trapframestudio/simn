@@ -1,4 +1,4 @@
-//! `NpcRank` substrate. Universal STALKER-style threat tier
+//! `NpcRank` substrate. Universal classic threat tier
 //! derived from `NpcStats::combat_competence`. Per
 //! `docs/book/src/planning/npc-character-authoring-plan.md` step 2.
 
@@ -100,7 +100,7 @@ fn rank_labels_are_stable() {
 fn fresh_npc_has_rank_consistent_with_stats() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0; 3], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0; 3], None);
     let c = sim.npc_character_for_test(id).expect("npc has character");
     assert_eq!(c.rank, NpcRank::from_stats(&c.stats));
 }
@@ -108,19 +108,27 @@ fn fresh_npc_has_rank_consistent_with_stats() {
 #[test]
 fn rank_distribution_skews_low_for_pwa() {
     // Sample 200 NPCs; expect Rookie + Experienced to dominate, with
-    // Master + Legend rare. PWA's combat-stat nudge (+0.6 × 20 ≈ 12)
+    // Master + Legend rare. Coalition's combat-stat nudge (+0.6 × 20 ≈ 12)
     // pulls the typical sum upward but most NPCs still sit below the
     // 410 Master floor. Wide tolerance — this guards against a
     // floor-table miscalibration that flips the distribution.
-    let pwa = PersonalityArchetype::from_faction_name("pwa");
+    let coalition = PersonalityArchetype::Disciplined;
     let dir = TempDir::new().unwrap();
     let sim = quiet_sim(&dir);
-    let pwa_id = sim.faction_registry().id_of("pwa").unwrap();
+    let pwa_id = sim.faction_registry().id_of("coalition").unwrap();
     let names = NameRegistry::load();
     let weights = std::collections::HashMap::new();
     let mut counts = [0u32; 5];
     for i in 0..200u64 {
-        let c = NpcCharacter::roll(NpcId(10_000 + i), pwa_id, pwa, 0.6, &names, &weights, None);
+        let c = NpcCharacter::roll(
+            NpcId(10_000 + i),
+            pwa_id,
+            coalition,
+            0.6,
+            &names,
+            &weights,
+            None,
+        );
         counts[c.rank as usize] += 1;
     }
     let rookie = counts[0];

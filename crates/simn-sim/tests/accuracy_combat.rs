@@ -44,14 +44,14 @@ fn accuracy_wiring_smoke_test() {
     // controlled-fire test harness (or projectile ballistics, where
     // accuracy → aim cone instead of hit-chance multiplier).
     //
-    // PWA vs Looters: hostile per the canonical relation table.
+    // Coalition vs Looters: hostile per the canonical relation table.
     // Required for `npc_aggro` to actually evaluate the pair (and
     // populate `LosCache`) — same-faction pairs short-circuit before
     // LOS is sampled, so the post-PR-#TBD LOS gate in `npc_combat`
     // would block the shot.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let shooter = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let shooter = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let target = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 0.0], None);
     sim.set_npc_accuracy_for_test(shooter, 100);
     sim.set_npc_aggro_for_test(shooter, target);

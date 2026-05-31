@@ -154,7 +154,7 @@ pub struct WorldTime {
 impl WorldTime {
     /// Real seconds per in-world day. 7200 real seconds = 2 real
     /// hours per in-world day → 1 in-world hour = 5 real minutes.
-    /// Tuned to feel like STALKER GAMMA's ~2.4 hr/day, biased a
+    /// Tuned to feel like a survival sandbox ~2.4 hr/day, biased a
     /// hair tighter so evals don't have to sit through a 2.5-hour
     /// cycle. Drop this to iterate on day-night visuals faster;
     /// ~300–600s is good for "see a full cycle every eval".
@@ -266,7 +266,7 @@ pub struct WeatherState {
     pub transitions_at_tick: u64,
 }
 
-/// Weather palette modeled on Pacific Northwest climate — lots of
+/// Weather palette modeled on temperate maritime climate — lots of
 /// gradation at the overcast / drizzle / light-rain end of the
 /// spectrum where the real region spends most of its time, plus
 /// seasonally-appropriate variants (marine layer, smoke haze).
@@ -283,7 +283,7 @@ pub enum Weather {
     MarineLayer,
     /// Dense inland fog. Visibility genuinely limited.
     Fog,
-    /// The signature "is it even raining?" Pacific mist. Always
+    /// The signature "is it even raining?" coastal mist. Always
     /// wet, never heavy.
     Drizzle,
     /// Steady moderate rain.
@@ -647,7 +647,7 @@ impl BallisticsConfig {
             right_leg: f32,
         }
         let text = src
-            .read_str("ballistics.toml")
+            .read_str("combat/ballistics.toml")
             .unwrap_or_else(|e| panic!("ballistics content load failed: {e}"));
         let raw: Raw = toml::from_str(&text).expect("ballistics.toml parses");
         Self {
@@ -698,7 +698,7 @@ impl Default for InventoryConfig {
 /// pass. Seeded from [`crate::resources::RegionControl`] at sim init
 /// (primary faction → larger target, contesting → smaller).
 /// `by_region: region → faction-name → target count`. Faction is
-/// keyed by the registry name string (`"pwa"`) so saves stay valid
+/// keyed by the registry name string (`"coalition"`) so saves stay valid
 /// across registry edits.
 #[derive(Resource, Serialize, Deserialize, Clone, Debug, Default)]
 pub struct PopulationTargets {
@@ -872,7 +872,7 @@ pub struct GuardPostInfo {
     pub since_tick: u64,
     /// Faction of the squad holding this post. Used by
     /// `build_relieve` to gate relief to same-faction posts only —
-    /// a PWA squad has no business "relieving" a federal guard, and
+    /// a Coalition squad has no business "relieving" a directorate guard, and
     /// cross-faction post takeover should require combat, not a
     /// peaceful handoff.
     pub faction: crate::faction::registry::FactionId,
@@ -1034,7 +1034,7 @@ impl InteractionAreas {
 
 /// Typed activity a designer places at a location. NPCs compete for
 /// slots based on faction, distance, personality, and capacity.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Deserialize)]
 pub enum ActivityKind {
     GuardStatic,
     GuardPerimeter,
@@ -1050,11 +1050,11 @@ pub enum ActivityKind {
 
 impl ActivityKind {
     pub fn is_guard(&self) -> bool {
-        matches!(self, Self::GuardStatic | Self::GuardPerimeter)
+        crate::poi::activity_is_guard(*self)
     }
 
     pub fn is_rest(&self) -> bool {
-        matches!(self, Self::RestSpot | Self::Campfire)
+        crate::poi::activity_is_rest(*self)
     }
 }
 

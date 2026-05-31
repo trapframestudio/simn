@@ -3,8 +3,8 @@
 //! `LifeRecord`s are written when an NPC is born, updated on
 //! significant life events (region migration, death), and *kept* in
 //! the chronicle after the entity itself is despawned. They're how
-//! later systems answer "who lived on the Western Line last week",
-//! "how many Linemen has the Valley killed since launch", etc.
+//! later systems answer "who lived on the frontier line last week",
+//! "how many Vanguard has the Valley killed since launch", etc.
 //!
 //! Backed by a `BTreeMap<NpcId, LifeRecord>` so iteration order is
 //! deterministic without sorting at every query.
@@ -20,7 +20,7 @@ use crate::region::RegionId;
 
 /// What ended an NPC's life. `Combat` carries the faction whose
 /// member was responsible — useful for chronicle queries like "how
-/// many Linemen has the Western Line's PWA killed since launch."
+/// many Vanguard has the frontier line's Coalition killed since launch."
 /// `Copy` removed when `Combat` started carrying a `String`
 /// (faction name). Death events are infrequent; the `clone()` cost
 /// is negligible vs the gain from name-string portability across
@@ -30,7 +30,7 @@ pub enum DeathCause {
     /// Lifespan expired.
     NaturalCauses,
     /// Killed by an NPC of the named faction. Stored as the
-    /// registry name string (`"pwa"`) so chronicles stay valid
+    /// registry name string (`"coalition"`) so chronicles stay valid
     /// across registry edits.
     Combat { killer_faction: String },
     /// Catch-all for non-combat deaths we don't model yet.
@@ -53,7 +53,7 @@ pub fn death_cause_to_str(c: &DeathCause) -> &'static str {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LifeRecord {
     pub id: NpcId,
-    /// Faction name (registry id as string, e.g. `"pwa"`).
+    /// Faction name (registry id as string, e.g. `"coalition"`).
     pub faction: String,
 
     pub birth_tick: u64,

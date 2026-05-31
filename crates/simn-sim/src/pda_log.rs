@@ -23,7 +23,7 @@ use crate::region::RegionId;
 /// Player-visible event. Keep variants narrow — these become user-
 /// facing strings, so every addition needs a translation/UX call.
 /// String fields carry faction *names* (registry id strings like
-/// `"pwa"`) because PDA-log entries persist across registry edits
+/// `"coalition"`) because PDA-log entries persist across registry edits
 /// (the same reason `LifeRecord::faction` is a string).
 #[derive(Clone, Debug)]
 pub enum PdaEvent {

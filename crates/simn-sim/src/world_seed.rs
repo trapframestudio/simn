@@ -147,7 +147,7 @@ pub fn seed_random_world_content(world: &mut World, graph: &RegionGraph, seed: u
         }
 
         // Neutral, non-contestable campsites: stored under
-        // `wanderers` as a placeholder neutral owner; `RegionControl`
+        // `nomads` as a placeholder neutral owner; `RegionControl`
         // doesn't count them so they stay off the contest map.
         let campsite_count = rng.gen_range(4..=7usize);
         for &(cx, cz) in available_cells.iter().skip(base_count).take(campsite_count) {
@@ -159,7 +159,7 @@ pub fn seed_random_world_content(world: &mut World, graph: &RegionGraph, seed: u
                 0.0,
                 rng.gen_range((cell_z0 + inset)..(cell_z0 + cell_size - inset)),
             ]);
-            bases.push((region_id, "wanderers".to_string(), BaseKind::CampSite, pos));
+            bases.push((region_id, "nomads".to_string(), BaseKind::CampSite, pos));
         }
     }
 
@@ -552,12 +552,12 @@ fn seed_loot_containers(
         let id = world.resource_mut::<ContainerIdCounter>().mint();
         let mut grid = GridInventory::new(kind.grid.w, kind.grid.h);
         // Faction defaults to the region's primary controller
-        // (state.primary). Falls back to "wanderers" — the
+        // (state.primary). Falls back to "nomads" — the
         // neutral pool — if the region has no recorded primary.
         let faction = region_factions
             .get(&region_id)
             .cloned()
-            .unwrap_or_else(|| "wanderers".to_string());
+            .unwrap_or_else(|| "nomads".to_string());
         let depth_tier: u8 = 1; // Surface tier until zones author tiers.
         items_placed += roll_initial_container_contents(
             &mut grid,
@@ -635,20 +635,20 @@ pub(crate) fn roll_initial_container_contents(
 }
 
 /// Weighted picker for "who runs this region." Top-level factions
-/// only — Linemen / Ghost Teams / Registry / Recovery Division /
-/// Choir / Looters / Cartel are subfactions and never primary
+/// only — Vanguard / Directorate Recon / Registry / Consortium Recovery /
+/// Devout / Looters / Smugglers are subfactions and never primary
 /// region controllers (they spawn within their parent's territory).
 /// `merged` is excluded — endgame, single fixed site.
 fn pick_primary_faction(rng: &mut ChaCha8Rng) -> &'static str {
     const WEIGHTED: &[(&str, u32)] = &[
-        ("pwa", 30),
-        ("federal", 12),
-        ("attuned", 12),
-        ("bandits", 14),
-        ("revere_guard", 9),
-        ("aegis_pacific", 12),
-        ("gulf_compact", 4),
-        ("wanderers", 5),
+        ("coalition", 30),
+        ("directorate", 12),
+        ("the_order", 12),
+        ("raiders", 14),
+        ("homesteaders", 9),
+        ("consortium", 12),
+        ("syndicate", 4),
+        ("nomads", 5),
     ];
     let total: u32 = WEIGHTED.iter().map(|(_, w)| *w).sum();
     let mut roll = rng.gen_range(0..total);
@@ -658,50 +658,25 @@ fn pick_primary_faction(rng: &mut ChaCha8Rng) -> &'static str {
         }
         roll -= *w;
     }
-    "wanderers" // unreachable in practice
+    "nomads" // unreachable in practice
 }
 
-/// Pick a base kind, lightly biased by owner faction so the world
-/// reads right (PWA → Checkpoints, Federal/Aegis → ResearchPosts,
-/// Bandits → Outposts, etc.). Subfactions inherit via the registry
-/// parent walk in [`pick_base_kind_for_id`].
-fn base_kind_weights_for_known(owner: &str) -> Option<&'static [(BaseKind, u32)]> {
-    Some(match owner {
-        "pwa" => &[
-            (BaseKind::Checkpoint, 5),
-            (BaseKind::Outpost, 3),
-            (BaseKind::Headquarters, 1),
-        ],
-        "linemen" => &[(BaseKind::Checkpoint, 6), (BaseKind::Headquarters, 2)],
-        "federal" | "aegis_pacific" => &[
-            (BaseKind::ResearchPost, 5),
-            (BaseKind::Outpost, 2),
-            (BaseKind::Safehouse, 1),
-        ],
-        "bandits" => &[(BaseKind::Outpost, 4), (BaseKind::Safehouse, 1)],
-        "revere_guard" => &[
-            (BaseKind::Safehouse, 4),
-            (BaseKind::Outpost, 2),
-            (BaseKind::Checkpoint, 1),
-        ],
-        "wanderers" | "attuned" => &[(BaseKind::Safehouse, 5), (BaseKind::Outpost, 1)],
-        "gulf_compact" => &[(BaseKind::Safehouse, 2), (BaseKind::Outpost, 2)],
-        "merged" => &[(BaseKind::Headquarters, 1)],
-        _ => return None,
-    })
-}
-
+/// Pick a base kind, weighted by the owner faction's config-driven
+/// `base_kinds` (factions.toml), so the world reads right. Subfactions
+/// inherit their parent's weights, then a generic default, via the
+/// registry. The engine no longer hardcodes per-faction base-kind mixes.
 fn pick_base_kind_for_id(
     rng: &mut ChaCha8Rng,
     reg: &crate::faction::registry::FactionRegistry,
     owner: crate::faction::registry::FactionId,
 ) -> BaseKind {
-    let weights = reg
-        .resolve_with_parent_walk(owner, base_kind_weights_for_known)
-        .unwrap_or(&[(BaseKind::Outpost, 3), (BaseKind::Safehouse, 1)]);
+    let weights = reg.base_kind_weights(owner);
     let total: u32 = weights.iter().map(|(_, w)| *w).sum();
+    if total == 0 {
+        return BaseKind::Outpost;
+    }
     let mut roll = rng.gen_range(0..total);
-    for (k, w) in weights {
+    for (k, w) in &weights {
         if roll < *w {
             return *k;
         }

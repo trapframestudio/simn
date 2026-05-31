@@ -16,14 +16,14 @@ fn quiet_sim(_dir: &TempDir) -> Sim {
 
 #[test]
 fn squad_threat_board_aggregates_member_attackers() {
-    // Two grouped PWA NPCs each take damage from a different
+    // Two grouped Coalition NPCs each take damage from a different
     // attacker. After one tick (sweep_threats runs at the top),
     // the squad's ThreatList should contain BOTH attackers.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 99;
-    let mate1 = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let mate2 = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 0.0], Some(group_id));
+    let mate1 = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate2 = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 0.0], Some(group_id));
     // Spawn the attackers so the position index has them — proximity
     // factor reads from there.
     let attacker_a = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 5.0], None);
@@ -53,7 +53,7 @@ fn squad_threat_board_top_score_is_highest_damage() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 42;
-    let mate = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
     // Place both attackers at the same distance so proximity factors
     // are identical and damage drives the score ordering.
     let attacker_a = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 5.0], None);
@@ -83,7 +83,7 @@ fn solo_npc_has_no_threat_board() {
     // for an unaffiliated NPC even with damage on file.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let solo = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    let solo = sim.spawn_npc_for_test("nomads", 1, [0.0, 0.0, 0.0], None);
     let attacker = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 0.0], None);
     sim.record_npc_hit_for_test(solo, attacker, sim.current_tick(), 50.0);
 
@@ -121,7 +121,7 @@ fn aggregated_score_falls_off_with_recency() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 7;
-    let mate = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
     let stale_attacker = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 5.0], None);
     let fresh_attacker = sim.spawn_npc_for_test("looters", 1, [-5.0, 0.0, 5.0], None);
 
@@ -162,8 +162,8 @@ fn squad_aggro_switches_to_top_threat_when_dominant() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 11;
-    let mate1 = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let mate2 = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 0.0], Some(group_id));
+    let mate1 = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate2 = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 0.0], Some(group_id));
     let attacker_a = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 5.0], None);
     let attacker_b = sim.spawn_npc_for_test("looters", 1, [-5.0, 0.0, 5.0], None);
 
@@ -209,7 +209,7 @@ fn squad_aggro_holds_under_hysteresis() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 13;
-    let mate = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let mate = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
     let attacker_a = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 5.0], None);
     let attacker_b = sim.spawn_npc_for_test("looters", 1, [-5.0, 0.0, 5.0], None);
 
@@ -237,7 +237,7 @@ fn ungrouped_npc_unaffected_by_threat_board() {
     // Group correctly.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let solo = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    let solo = sim.spawn_npc_for_test("nomads", 1, [0.0, 0.0, 0.0], None);
     let original_target = sim.spawn_npc_for_test("looters", 1, [5.0, 0.0, 0.0], None);
     let other = sim.spawn_npc_for_test("looters", 1, [-5.0, 0.0, 0.0], None);
 

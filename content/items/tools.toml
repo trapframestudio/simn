@@ -14,7 +14,7 @@ category = "tool"
 weight = 0.8
 stack_size = 1
 
-# ---------- Toolkits & specialty kits (GAMMA-style tiered progression) ----------
+# ---------- Toolkits & specialty kits (tiered tiered progression) ----------
 #
 # Shape: `tool = { specialty = "<axis>", tier = "<tier>" }`. Each kit marks
 # one cell in the specialty × tier matrix — higher tiers satisfy every
@@ -160,14 +160,14 @@ weight = 6.0
 stack_size = 1
 tool = { specialty = "drug_making", tier = "expert" }
 
-# Shard crafting — homage to GAMMA's Artefact Melter. Single-tier:
-# holding the item at all unlocks the Shard-specialty recipe line. A
+# Salvage crafting — a single-tier salvage specialty. Single-tier:
+# holding the item at all unlocks the salvage-specialty recipe line. A
 # later "advanced melter" could extend this; for now one item covers
 # the axis.
 
 [[items]]
 id = "artefact_melter"
-name = "Artefact Melter"
+name = "Material Reclaimer"
 category = "tool"
 weight = 3.0
 stack_size = 1

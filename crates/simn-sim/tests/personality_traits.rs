@@ -18,7 +18,7 @@ fn quiet_sim(_dir: &TempDir) -> Sim {
 fn fresh_npc_has_personality_traits() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0; 3], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0; 3], None);
     let c = sim.npc_character_for_test(id).expect("npc has character");
     // Trait struct is the right shape — unwrap and read all 10
     // fields without panicking.
@@ -42,13 +42,13 @@ fn personality_deterministic_from_identity() {
     // Same (npc_id, faction_id, archetype) → identical personality.
     let dir = TempDir::new().unwrap();
     let sim = quiet_sim(&dir);
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
-    let arche = PersonalityArchetype::from_faction_name("pwa");
+    let faction = sim.faction_registry().id_of("coalition").unwrap();
+    let arche = PersonalityArchetype::Disciplined;
     let names = NameRegistry::load();
     let weights = std::collections::HashMap::new();
     let nid = NpcId(42);
-    let a = NpcCharacter::roll(nid, pwa, arche, 0.6, &names, &weights, None);
-    let b = NpcCharacter::roll(nid, pwa, arche, 0.6, &names, &weights, None);
+    let a = NpcCharacter::roll(nid, faction, arche, 0.6, &names, &weights, None);
+    let b = NpcCharacter::roll(nid, faction, arche, 0.6, &names, &weights, None);
     assert_eq!(a.personality, b.personality);
 }
 
@@ -84,35 +84,6 @@ fn archetype_skews_observed_traits_across_population() {
         greedy_yes_count >= 130,
         "Greedy archetype should skew toward greedy=true; got {}/200",
         greedy_yes_count
-    );
-}
-
-#[test]
-fn faction_name_maps_to_correct_archetype() {
-    // Spot-check the lookup table.
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("pwa"),
-        PersonalityArchetype::Disciplined
-    );
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("looters"),
-        PersonalityArchetype::Greedy
-    );
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("wanderers"),
-        PersonalityArchetype::Curious
-    );
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("attuned"),
-        PersonalityArchetype::Reverent
-    );
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("linemen"),
-        PersonalityArchetype::Aggressive
-    );
-    assert_eq!(
-        PersonalityArchetype::from_faction_name("nonexistent_faction"),
-        PersonalityArchetype::Default
     );
 }
 

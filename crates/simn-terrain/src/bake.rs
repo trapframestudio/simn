@@ -69,7 +69,7 @@ pub fn bake_map(
     dem_cache_dir: &Path,
 ) -> Result<BakeReport> {
     // Parse the zone up-front so a bogus spec fails before we download
-    // DEM tiles. All Pacific Northwest bakes land in zone 10N or 11N;
+    // DEM tiles. All temperate-maritime bakes land in zone 10N or 11N;
     // anything else isn't wired.
     let _zone = parse_utm_zone_n(&spec.bounds.utm_zone)?;
 
@@ -964,7 +964,7 @@ fn sample_srtm_at(
     let fc = (col - c0 as f64) as f32;
     let at = |r: usize, c: usize| -> f32 {
         let v = data[r * side + c];
-        // SRTM voids are i16::MIN. The Pacific Northwest has no known
+        // SRTM voids are i16::MIN. The temperate-maritime has no known
         // voids; treat as sea level if one slipped in.
         if v == i16::MIN {
             0.0

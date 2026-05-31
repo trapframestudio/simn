@@ -1,4 +1,4 @@
-//! simn-sim — Noosphere world simulation.
+//! simn-sim — engine-agnostic survival-sim world simulation.
 //!
 //! Server-authoritative, engine-agnostic world simulation built on
 //! `bevy_ecs`. The core mechanic (eventually) is two-tier fidelity:
@@ -44,6 +44,7 @@ pub mod patrol_zone;
 pub mod pda_log;
 pub mod perception;
 pub mod persistence;
+pub mod poi;
 pub mod region;
 pub mod resources;
 pub mod snapshot;
@@ -80,8 +81,8 @@ pub use faction::registry::{
     load_from_str as load_faction_registry_from_str, player_relation as registry_player_relation,
     player_relation_score as registry_player_relation_score,
     shift_faction_relation as registry_shift_faction_relation,
-    shift_player_rep as registry_shift_player_rep, FactionDef, FactionId, FactionRegistry,
-    PlayerReputation, RegistryError, RelationDeltas, DEFAULT_FACTIONS_TOML,
+    shift_player_rep as registry_shift_player_rep, CombatCosts, FactionDef, FactionId,
+    FactionRegistry, PlayerReputation, RegistryError, RelationDeltas, SquadSize,
 };
 pub use faction::{anchor_score, band_from_score, relation_from_str, relation_to_str, Relation};
 pub use helpers::{

@@ -276,8 +276,8 @@ pub(crate) fn build_relieve(
 ) -> Option<SquadObjective> {
     // Eligible posts: in same region, held by a same-faction squad
     // that isn't us, held long enough to be relief-eligible. The
-    // same-faction gate is what stops a PWA squad from "relieving"
-    // a federal guard post — cross-faction post takeover should
+    // same-faction gate is what stops a Coalition squad from "relieving"
+    // a directorate guard post — cross-faction post takeover should
     // require combat, not a peaceful handoff. Allied factions
     // (NAP partners) don't relieve either; their reinforcement
     // shows up as a separate Guard objective in the same region.
@@ -334,8 +334,8 @@ pub(crate) fn build_investigate(
     deltas: &crate::faction::registry::RelationDeltas,
 ) -> SquadObjective {
     // Prefer to scout/raid an enemy-held base in the squad's
-    // current region — captures the "PWA squad walking through
-    // a Federal region eyes a Federal outpost" intuition. Only
+    // current region — captures the "Coalition squad walking through
+    // a Directorate region eyes a Directorate outpost" intuition. Only
     // hostile-faction non-Headquarters bases are eligible
     // (HQs are flip-immune by design). With multiple candidates,
     // pick from the nearest 3 with squad-RNG jitter so squads

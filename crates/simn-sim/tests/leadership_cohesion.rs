@@ -40,8 +40,8 @@ fn low_leadership_squad_regroups_at_90m_spread() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 7777;
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let b = sim.spawn_npc_for_test("pwa", 1, [180.0, 0.0, 0.0], Some(group_id));
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let b = sim.spawn_npc_for_test("coalition", 1, [180.0, 0.0, 0.0], Some(group_id));
     sim.set_npc_leadership_for_test(a, 0);
     sim.set_npc_leadership_for_test(b, 0);
     // Re-position to confirm spread (debug spawn places at [0;3]
@@ -65,8 +65,8 @@ fn high_leadership_squad_holds_at_90m_spread() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 8888;
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let b = sim.spawn_npc_for_test("pwa", 1, [180.0, 0.0, 0.0], Some(group_id));
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let b = sim.spawn_npc_for_test("coalition", 1, [180.0, 0.0, 0.0], Some(group_id));
     sim.set_npc_leadership_for_test(a, 100);
     sim.set_npc_leadership_for_test(b, 100);
     sim.move_npc_for_test(a, [0.0, 0.0, 0.0], 1);
@@ -87,8 +87,8 @@ fn baseline_threshold_still_holds_below_56m() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let group_id = 9999;
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
-    let b = sim.spawn_npc_for_test("pwa", 1, [100.0, 0.0, 0.0], Some(group_id));
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let b = sim.spawn_npc_for_test("coalition", 1, [100.0, 0.0, 0.0], Some(group_id));
     sim.set_npc_leadership_for_test(a, 0);
     sim.set_npc_leadership_for_test(b, 0);
     sim.move_npc_for_test(a, [0.0, 0.0, 0.0], 1);

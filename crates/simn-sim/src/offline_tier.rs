@@ -70,7 +70,7 @@ pub enum LoadoutClass {
     Standard { faction: FactionId, tier: u8 },
     /// Faction elite kit (top-tier weapons + armor for the faction).
     Elite { faction: FactionId },
-    /// Mixed kit — wanderers, looters, anyone who took what was on
+    /// Mixed kit — nomads, looters, anyone who took what was on
     /// the ground. No faction-coherent loadout table; projection
     /// rolls from a "scrap" pool.
     Improvised,
@@ -345,8 +345,8 @@ fn faction_to_loadout_class(
 ) -> LoadoutClass {
     let name = registry.name_of(faction);
     match name {
-        "wanderers" | "bandits" => LoadoutClass::Improvised,
-        "ghost_teams" | "recovery_division" | "choir" | "registry" => {
+        "nomads" | "raiders" => LoadoutClass::Improvised,
+        "directorate_recon" | "consortium_recovery" | "order_devout" | "syndicate_enforcers" => {
             LoadoutClass::Elite { faction }
         }
         _ => LoadoutClass::Standard { faction, tier: 1 },

@@ -90,7 +90,7 @@ fn ammo_config_carries_caliber_class_from_toml() {
 }
 
 #[test]
-fn gamma_roster_covers_every_caliber_class() {
+fn roster_covers_every_caliber_class() {
     // Spot-check that the expanded ammo TOML reaches every
     // CaliberClass variant. Catches a regression where a roster
     // expansion drops one of the seven buckets.
@@ -122,7 +122,7 @@ fn gamma_roster_covers_every_caliber_class() {
 #[test]
 fn modern_calibers_spot_check() {
     // A handful of canonical rounds with their expected caliber
-    // classes, sourced from `weapons-plan.md` §4.2 + the GAMMA
+    // classes, sourced from `weapons-plan.md` §4.2 + the the genre
     // expansion. Catches typos in `caliber_class` keys.
     let registry = ItemRegistry::load();
     let cases: &[(&str, CaliberClass)] = &[

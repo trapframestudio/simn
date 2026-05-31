@@ -108,7 +108,7 @@ impl LootContainerRegistry {
     /// (just `world_seed`) treat that as "no scatter containers this
     /// run" rather than failing sim init.
     fn parse_defs(src: &crate::ContentSource) -> Vec<LootContainerDef> {
-        match src.read_str_opt("loot_containers.toml") {
+        match src.read_str_opt("loot/loot_containers.toml") {
             Ok(Some(text)) => match toml::from_str::<Wire>(&text) {
                 Ok(wire) => wire.containers,
                 Err(e) => {

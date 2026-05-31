@@ -1,4 +1,4 @@
-# Noosphere recipe catalog. Loaded by `RecipeRegistry::load` via
+# Example recipe catalog. Loaded by `RecipeRegistry::load` via
 # `include_str!`. Step 4 ships the minimum viable set — raw → cooked
 # is the headline cooking loop that was deferred from Step 3's
 # food/water PR. Workbench-tier recipes + the full crafting tree land
@@ -18,7 +18,7 @@ outputs = [{ id = "cooked_meat", count = 1 }]
 
 # ---------- Medical / basic bench (smoke tests for Step 5) ----------
 #
-# Two example recipes that exercise the GAMMA-style tier/specialty
+# Two example recipes that exercise the tiered tier/specialty
 # system end-to-end. Numbers are placeholders; real per-tier recipe
 # catalogs fill in as weapons / armor / meds systems ship.
 
@@ -43,9 +43,9 @@ inputs = [
 ]
 outputs = [{ id = "antibiotics", count = 1 }]
 
-# ---------- Specialty-kit production (GAMMA pattern) ----------
+# ---------- Specialty-kit production (tiered-specialty pattern) ----------
 #
-# Mirrors GAMMA's "Advanced Tools → Heavy Armor Repair Kit" chain:
+# Models an Advanced Tools -> Heavy Armor Repair Kit chain:
 # higher-tier general kits are the **prereq** for crafting the
 # specialty kit item itself. Numbers are placeholder material costs
 # and craft times; real tuning lands with the weapons / armor

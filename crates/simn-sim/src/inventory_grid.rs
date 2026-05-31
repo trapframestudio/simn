@@ -1,4 +1,4 @@
-//! Tarkov/STALKER-hybrid grid inventory placement engine.
+//! grid-based grid inventory placement engine.
 //!
 //! Pure functions over [`crate::components::GridInventory`] — no ECS,
 //! no `Sim`, no `World`. Every mutation goes through this module so

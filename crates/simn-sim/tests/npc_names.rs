@@ -141,7 +141,7 @@ fn roll_covers_all_buckets_over_population() {
 fn fresh_npc_has_name_and_nationality() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0; 3], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0; 3], None);
     let c = sim.npc_character_for_test(id).expect("npc has character");
     assert!(!c.name.is_empty(), "name shouldn't be empty");
     assert!(
@@ -164,7 +164,7 @@ fn from_name_round_trips_all_buckets() {
 
 #[test]
 fn roll_for_faction_skews_toward_weighted_bucket() {
-    // Cartel's TOML lean is `latin_american = 7` against ~8 other
+    // Smugglers's TOML lean is `latin_american = 7` against ~8 other
     // buckets at low weights. Over a sample, Latin-American names
     // should dominate.
     let reg = NameRegistry::load();
@@ -226,15 +226,15 @@ fn npc_name_deterministic_from_identity() {
     // Two separate sims, same NPC id + faction — the rolled name
     // should match exactly. Confirms re-roll on snapshot reload
     // yields the same name.
-    let pwa_arche = PersonalityArchetype::from_faction_name("pwa");
+    let pwa_arche = PersonalityArchetype::Disciplined;
     let names = NameRegistry::load();
     let dir = TempDir::new().unwrap();
     let sim = quiet_sim(&dir);
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
     let weights = std::collections::HashMap::new();
     let nid = NpcId(123);
-    let a = NpcCharacter::roll(nid, pwa, pwa_arche, 0.6, &names, &weights, None);
-    let b = NpcCharacter::roll(nid, pwa, pwa_arche, 0.6, &names, &weights, None);
+    let a = NpcCharacter::roll(nid, coalition, pwa_arche, 0.6, &names, &weights, None);
+    let b = NpcCharacter::roll(nid, coalition, pwa_arche, 0.6, &names, &weights, None);
     assert_eq!(a.name, b.name);
     assert_eq!(a.nationality, b.nationality);
 }

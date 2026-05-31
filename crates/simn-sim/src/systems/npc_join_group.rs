@@ -6,7 +6,7 @@
 //! `JOIN_RADIUS_M`. With probability `JOIN_PROB_NUM/JOIN_PROB_DEN`
 //! per check, attach the solo to that squad (insert `Group { id }`).
 //!
-//! Wanderers stay solo by design (their faction archetype is the
+//! Nomads stay solo by design (their faction archetype is the
 //! drifter — letting them group up would erase their flavor).
 //! Everyone else can pick up stragglers.
 //!
@@ -64,13 +64,14 @@ pub fn npc_join_group(
 
     let mut rng = ChaCha8Rng::seed_from_u64(clock.tick.wrapping_mul(0xA5A5_5A5A_F00D_BABE));
 
-    let wanderers_id = registry.id_of("wanderers");
+    let baseline_id = registry.player_baseline();
     for (entity, faction, region, pos, group) in &snap {
         if group.is_some() {
             continue;
         }
-        if Some(*faction) == wanderers_id {
-            // Drifters stay drifters.
+        if Some(*faction) == baseline_id {
+            // The player-baseline faction stays solo (loners don't
+            // auto-join squads). Config-driven via `player_baseline`.
             continue;
         }
         // Find nearest same-region group member with a friendly relation.

@@ -17,11 +17,11 @@ fn quiet_sim(_dir: &TempDir) -> Sim {
 fn fresh_character() -> NpcCharacter {
     let dir = TempDir::new().unwrap();
     let sim = quiet_sim(&dir);
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
-    let arche = PersonalityArchetype::from_faction_name("pwa");
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
+    let arche = PersonalityArchetype::Disciplined;
     let names = NameRegistry::load();
     let weights = std::collections::HashMap::new();
-    NpcCharacter::roll(NpcId(1), pwa, arche, 0.6, &names, &weights, None)
+    NpcCharacter::roll(NpcId(1), coalition, arche, 0.6, &names, &weights, None)
 }
 
 #[test]
@@ -79,12 +79,12 @@ fn rank_promotion_is_pure_function_of_kills_and_stats() {
     // count must produce identical effective_competence and rank.
     let dir = TempDir::new().unwrap();
     let sim = quiet_sim(&dir);
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
-    let arche = PersonalityArchetype::from_faction_name("pwa");
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
+    let arche = PersonalityArchetype::Disciplined;
     let names = NameRegistry::load();
     let weights = std::collections::HashMap::new();
-    let mut a = NpcCharacter::roll(NpcId(7), pwa, arche, 0.6, &names, &weights, None);
-    let mut b = NpcCharacter::roll(NpcId(7), pwa, arche, 0.6, &names, &weights, None);
+    let mut a = NpcCharacter::roll(NpcId(7), coalition, arche, 0.6, &names, &weights, None);
+    let mut b = NpcCharacter::roll(NpcId(7), coalition, arche, 0.6, &names, &weights, None);
     for _ in 0..15 {
         a.record_kill();
         b.record_kill();

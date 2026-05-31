@@ -33,7 +33,7 @@ fn set_active_region_demotes_inactive_region_npcs_to_offline() {
     // Spawn an NPC in region 2 and activate region 1. Region 2's
     // NPC should be in the offline schema after the activation
     // because the invariant is "online entity ⇔ region active."
-    let id = sim.spawn_npc_for_test("pwa", 2, [10.0, 0.0, -5.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 2, [10.0, 0.0, -5.0], None);
     sim.set_active_region(2);
     assert!(
         sim.offline_npc_for_test(id).is_none(),
@@ -60,7 +60,7 @@ fn online_offline_online_round_trip_preserves_identity_and_health_class() {
     let mut sim = fresh_sim(&dir);
     sim.set_active_region(1);
     // Spawn fresh in the active region.
-    let id = sim.spawn_npc_for_test("linemen", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition_vanguard", 1, [0.0, 0.0, 0.0], None);
     // Damage one leg so the NPC will project as Wounded.
     sim.set_npc_body_part_for_test(id, BodyPart::LeftLeg, 40.0);
 
@@ -131,7 +131,7 @@ fn projection_preserves_squad_group_id() {
     let mut sim = fresh_sim(&dir);
     sim.set_active_region(1);
     let group_id: u64 = 0x1234_5678_DEAD_BEEF;
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], Some(group_id));
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], Some(group_id));
 
     sim.set_active_region(2);
     let offline = sim
@@ -163,7 +163,7 @@ fn critical_npc_projects_critical() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
     sim.set_active_region(1);
-    let id = sim.spawn_npc_for_test("federal", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("directorate", 1, [0.0, 0.0, 0.0], None);
     // Torso below 25% → Critical per `body_parts_to_health_class`.
     sim.set_npc_body_part_for_test(id, BodyPart::Torso, 10.0);
 
@@ -183,7 +183,7 @@ fn redundant_set_active_region_is_a_no_op() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
     sim.set_active_region(1);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     // Calling set_active_region(1) again should not project anything;
     // the NPC should remain online.
     sim.set_active_region(1);

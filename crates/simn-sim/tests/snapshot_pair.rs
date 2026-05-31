@@ -43,8 +43,8 @@ fn snapshot_includes_only_active_region_npcs() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     // active region = 1
-    let n1 = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 10.0], None);
-    let n2 = sim.spawn_npc_for_test("pwa", 2, [20.0, 0.0, 20.0], None);
+    let n1 = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 10.0], None);
+    let n2 = sim.spawn_npc_for_test("coalition", 2, [20.0, 0.0, 20.0], None);
 
     sim.tick().unwrap();
     sim.tick().unwrap();
@@ -65,7 +65,7 @@ fn snapshot_includes_only_active_region_npcs() {
 fn snapshot_advances_published_at_across_ticks() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let _ = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 10.0], None);
+    let _ = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 10.0], None);
 
     sim.tick().unwrap();
     // Force a small wall-clock gap so consecutive snapshots have
@@ -84,9 +84,9 @@ fn snapshot_npcs_sorted_by_id() {
     let mut sim = quiet_sim(&dir);
     // Spawn several so we can confirm ordering. Ids assigned in
     // spawn order, so ascending by spawn time.
-    let _a = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 0.0], None);
-    let _b = sim.spawn_npc_for_test("pwa", 1, [20.0, 0.0, 0.0], None);
-    let _c = sim.spawn_npc_for_test("pwa", 1, [30.0, 0.0, 0.0], None);
+    let _a = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 0.0], None);
+    let _b = sim.spawn_npc_for_test("coalition", 1, [20.0, 0.0, 0.0], None);
+    let _c = sim.spawn_npc_for_test("coalition", 1, [30.0, 0.0, 0.0], None);
 
     sim.tick().unwrap();
 

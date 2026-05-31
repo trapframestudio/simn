@@ -1,4 +1,4 @@
-# Noosphere item catalog. Loaded by `ItemRegistry::load` via
+# Example item catalog. Loaded by `ItemRegistry::load` via
 # `include_str!` at compile-time. Keep IDs stable — saves reference
 # them. Numbers are tunable, not committed contracts.
 #

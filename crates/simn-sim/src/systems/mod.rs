@@ -9,7 +9,7 @@
 /// Diagnostic timing guard — drop logs system elapsed if it exceeds
 /// the threshold. Add `let _t = SysTimer::new("name");` at the top
 /// of any system to time it; any exit path triggers Drop.
-/// Suppressed via `NSPH_QUIET=1`.
+/// Suppressed via `SIMN_QUIET=1`.
 pub(crate) struct SysTimer {
     name: &'static str,
     start: std::time::Instant,
@@ -37,16 +37,16 @@ impl Drop for SysTimer {
 /// Default off so a vanilla launch is quiet (no per-tick
 /// `[sys …]` / `[spawn_npcs …]` / `[tick_npc_goals …]` /
 /// `[sim.tick …]` lines spamming the console). Set
-/// `NSPH_VERBOSE=1` in the environment to re-enable when
+/// `SIMN_VERBOSE=1` in the environment to re-enable when
 /// profiling or debugging a tick path.
 ///
-/// Replaces the old `NSPH_QUIET` env-var gate, which was
+/// Replaces the old `SIMN_QUIET` env-var gate, which was
 /// inverted (logs ON by default) and re-checked on every
 /// per-tick log site. This one is read once into a `OnceLock`
 /// so steady-state per-tick cost is one atomic load.
 fn verbose_logging_enabled() -> bool {
     static CACHE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *CACHE.get_or_init(|| std::env::var("NSPH_VERBOSE").is_ok())
+    *CACHE.get_or_init(|| std::env::var("SIMN_VERBOSE").is_ok())
 }
 
 pub fn is_verbose_logging() -> bool {

@@ -137,7 +137,7 @@ fn npc_projectiles_damage_online_npcs() {
     use simn_sim::components::BodyPart;
     let mut sim = fresh_sim(21);
     sim.activate_all_regions_for_test();
-    let shooter = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let shooter = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let target = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
     sim.set_npc_accuracy_for_test(shooter, 100);
     sim.set_npc_yaw_for_test(shooter, std::f32::consts::FRAC_PI_2);
@@ -247,20 +247,20 @@ fn npc_projectiles_damage_online_npcs() {
 #[test]
 fn faction_default_round_matches_authored_table() {
     use simn_sim::default_npc_round_for_faction;
-    // Spot-check the shipped mapping. PWA / Federal / Aegis fire
-    // rifle-caliber intermediates; bandits + wanderers fire
-    // pistol-caliber 9×18; Attuned fire 7.62×39; unknown factions
+    // Spot-check the shipped mapping. Coalition / Directorate / Consortium fire
+    // rifle-caliber intermediates; raiders + nomads fire
+    // pistol-caliber 9×18; Order fire 7.62×39; unknown factions
     // fall back to 5.45×39 (neutral default).
     let cases: &[(&str, &str)] = &[
-        ("pwa", "round_5_45x39"),
-        ("federal", "round_556x45_m193"),
-        ("aegis_pacific", "round_556x45_m193"),
-        ("revere_guard", "round_5_45x39"),
-        ("attuned", "round_762x39"),
-        ("gulf_compact", "round_9x19"),
-        ("bandits", "round_9x18"),
-        ("wanderers", "round_9x18"),
-        ("linemen", "round_5_45x39"),
+        ("coalition", "round_5_45x39"),
+        ("directorate", "round_556x45_m193"),
+        ("consortium", "round_556x45_m193"),
+        ("homesteaders", "round_5_45x39"),
+        ("the_order", "round_762x39"),
+        ("syndicate", "round_9x19"),
+        ("raiders", "round_9x18"),
+        ("nomads", "round_9x18"),
+        ("coalition_vanguard", "round_5_45x39"),
         ("not_a_real_faction", "round_5_45x39"), // fallback
     ];
     for (faction, expected) in cases {
@@ -284,15 +284,15 @@ fn each_authored_faction_round_has_ammo_config() {
     let world = sim.world_for_test();
     let registry = world.resource::<simn_sim::items::ItemRegistry>().clone();
     for faction in [
-        "pwa",
-        "federal",
-        "aegis_pacific",
-        "revere_guard",
-        "attuned",
-        "gulf_compact",
-        "bandits",
-        "wanderers",
-        "linemen",
+        "coalition",
+        "directorate",
+        "consortium",
+        "homesteaders",
+        "the_order",
+        "syndicate",
+        "raiders",
+        "nomads",
+        "coalition_vanguard",
     ] {
         let round = default_npc_round_for_faction(faction);
         let def = registry.get(&round).unwrap_or_else(|| {
@@ -308,7 +308,7 @@ fn each_authored_faction_round_has_ammo_config() {
 
 #[test]
 fn npc_fire_with_pistol_caliber_produces_lower_muzzle_velocity() {
-    // Bandits fire 9×18 (~315 m/s muzzle velocity), PWA fire
+    // Raiders fire 9×18 (~315 m/s muzzle velocity), Coalition fire
     // 5.45×39 (~880 m/s). Confirms the velocity actually lands
     // on the projectile from the round's ammo_config, not a
     // hardcoded constant.

@@ -156,7 +156,7 @@ impl BehaviorConfig {
 
     fn parse(src: &crate::ContentSource) -> Self {
         let text = src
-            .read_str("behavior.toml")
+            .read_str("ai/behavior.toml")
             .unwrap_or_else(|e| panic!("behavior content load failed: {e}"));
         toml::from_str(&text).expect("behavior.toml must parse")
     }
@@ -174,7 +174,7 @@ impl WorldTimeConfig {
     // through the embedded pack so it isn't double-embedded.
     fn parse_from_toml() -> Self {
         let text = crate::ContentSource::Embedded
-            .read_str("world_time.toml")
+            .read_str("world/world_time.toml")
             .expect("embedded world_time.toml present");
         toml::from_str(&text).expect("world_time.toml must parse")
     }

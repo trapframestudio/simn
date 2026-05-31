@@ -19,9 +19,9 @@ fn tick_offline_ticks(sim: &mut Sim, n: u64) {
 
 #[test]
 fn two_hostile_offline_squads_eventually_produce_a_death() {
-    // Region 1 is offline (we activate region 2). Plant 8 pwa + 8
-    // bandits in close range so engagement fires and the dice cycle
-    // runs hot. PWA vs bandits are Hostile per `factions.toml`.
+    // Region 1 is offline (we activate region 2). Plant 8 coalition + 8
+    // raiders in close range so engagement fires and the dice cycle
+    // runs hot. Coalition vs raiders are Hostile per `factions.toml`.
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
     sim.set_active_region(2);
@@ -30,8 +30,8 @@ fn two_hostile_offline_squads_eventually_produce_a_death() {
     // so the dice fire every offline tick.
     for i in 0..8 {
         let dx = (i as f32) * 4.0;
-        sim.spawn_offline_npc_for_test("pwa", 1, [dx, 0.0]);
-        sim.spawn_offline_npc_for_test("bandits", 1, [dx + 1.0, 50.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [dx, 0.0]);
+        sim.spawn_offline_npc_for_test("raiders", 1, [dx + 1.0, 50.0]);
     }
 
     // 120 offline ticks ≈ 60 s of sim wall time. With per-tick hit
@@ -64,7 +64,7 @@ fn allied_factions_dont_fight_offline() {
     sim.set_active_region(2);
 
     for i in 0..6 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 3.0, 0.0]);
     }
 
     tick_offline_ticks(&mut sim, 60);
@@ -92,8 +92,8 @@ fn offline_combat_degrades_health_class_before_killing() {
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
     sim.set_active_region(2);
 
-    let a = sim.spawn_offline_npc_for_test("pwa", 1, [0.0, 0.0]);
-    let b = sim.spawn_offline_npc_for_test("bandits", 1, [5.0, 0.0]);
+    let a = sim.spawn_offline_npc_for_test("coalition", 1, [0.0, 0.0]);
+    let b = sim.spawn_offline_npc_for_test("raiders", 1, [5.0, 0.0]);
 
     // Before any ticks both NPCs are Healthy.
     assert!(matches!(
@@ -130,31 +130,31 @@ fn offline_combat_degrades_health_class_before_killing() {
 
 #[test]
 fn neutral_factions_dont_engage_offline() {
-    // Some faction pairs default to Neutral, not Hostile (e.g. PWA
-    // vs Federal — verify by reading the registry). If we pick a
+    // Some faction pairs default to Neutral, not Hostile (e.g. Coalition
+    // vs Directorate — verify by reading the registry). If we pick a
     // known non-hostile pair, no combat should fire.
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
     sim.set_active_region(2);
 
-    // Use wanderers vs pwa — looking at factions.toml, wanderers are
-    // typically Cold/Neutral with most factions. If wanderers turn
-    // out to be hostile to pwa, this assertion will need a different
+    // Use nomads vs coalition — looking at factions.toml, nomads are
+    // typically Cold/Neutral with most factions. If nomads turn
+    // out to be hostile to coalition, this assertion will need a different
     // pair; the test still verifies the "non-hostile → no engagement"
     // contract.
     let registry = sim.faction_registry();
-    let pwa = registry.id_of("pwa").unwrap();
-    let wand = registry.id_of("wanderers").unwrap();
-    let relation = sim.faction_relation(pwa, wand);
+    let coalition = registry.id_of("coalition").unwrap();
+    let wand = registry.id_of("nomads").unwrap();
+    let relation = sim.faction_relation(coalition, wand);
     assert!(
         !matches!(relation, simn_sim::Relation::Hostile),
-        "test premise: pwa<->wanderers must be non-hostile (got {relation:?}); \
+        "test premise: coalition<->nomads must be non-hostile (got {relation:?}); \
          pick a different non-hostile pair if the registry changed"
     );
 
     for i in 0..6 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);
-        sim.spawn_offline_npc_for_test("wanderers", 1, [(i as f32) * 3.0 + 1.0, 0.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 3.0, 0.0]);
+        sim.spawn_offline_npc_for_test("nomads", 1, [(i as f32) * 3.0 + 1.0, 0.0]);
     }
 
     tick_offline_ticks(&mut sim, 60);

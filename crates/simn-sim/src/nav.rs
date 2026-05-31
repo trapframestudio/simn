@@ -77,7 +77,7 @@ pub enum TravelStyle {
     /// when nearby but doesn't detour for them.
     #[default]
     Mixed,
-    /// Cross-country, no road preference. Wanderers, hunters, NPCs
+    /// Cross-country, no road preference. Nomads, hunters, NPCs
     /// avoiding patrols. Takes the geometrically shortest traversable
     /// route.
     Bushwhacker,

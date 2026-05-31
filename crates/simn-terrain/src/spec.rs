@@ -154,7 +154,7 @@ pub enum BakeSource {
     /// NASA SRTM 1-arcsec `.hgt` tile (3601×3601, i16 big-endian).
     SrtmHgt {
         /// Tile id like `"N45W123"`. The loader derives the download
-        /// URL from this and caches the file under `/tmp/noosphere-dem/`.
+        /// URL from this and caches the file under `/tmp/simn-dem/`.
         tile: String,
         /// Optional override for where the tile file lives locally.
         /// If set, the loader skips the download path entirely.
@@ -178,7 +178,7 @@ pub enum BakeSource {
     /// SRTM elsewhere). Zoom picks the effective spacing: 14 ≈ 10 m,
     /// 15 ≈ 5 m, 16 ≈ 2.4 m at lat 45°.
     MapzenTerrarium {
-        /// TMS zoom level. 15 is the preferred default for Noosphere
+        /// TMS zoom level. 15 is the preferred default for SIMN
         /// — 2-3× the effective resolution of SRTM without per-map
         /// LIDAR discovery / multi-hundred-MB downloads.
         #[serde(default = "default_terrarium_zoom")]

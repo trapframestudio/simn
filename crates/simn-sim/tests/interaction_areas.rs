@@ -104,13 +104,13 @@ fn release_frees_slot() {
 fn faction_filter_restricts_reservation() {
     let mut sim = build_sim();
     let registry = sim.faction_registry();
-    // `factions.toml` ships with at least `looters` + `pwa` + `federal`.
+    // `factions.toml` ships with at least `looters` + `coalition` + `directorate`.
     // Pick any two distinct ids; if they aren't present, the test
     // surfaces the registry change loudly rather than passing
     // silently.
     let primary = registry
-        .id_of("federal")
-        .expect("factions.toml must define `federal`");
+        .id_of("directorate")
+        .expect("factions.toml must define `directorate`");
     let outsider = registry
         .id_of("looters")
         .expect("factions.toml must define `looters`");

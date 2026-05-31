@@ -48,8 +48,8 @@ fn high_endurance_npc_bleeds_slower_than_low() {
     // The high-endurance NPC should retain more torso HP at the end.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let tough = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let frail = sim.spawn_npc_for_test("pwa", 1, [10.0, 0.0, 0.0], None);
+    let tough = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let frail = sim.spawn_npc_for_test("coalition", 1, [10.0, 0.0, 0.0], None);
     sim.set_npc_endurance_for_test(tough, 100);
     sim.set_npc_endurance_for_test(frail, 0);
     // Apply the same wound to both — 30 damage each, which spawns a

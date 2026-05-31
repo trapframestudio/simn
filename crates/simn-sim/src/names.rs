@@ -117,7 +117,7 @@ struct BucketPool {
 }
 
 /// Default male/female split for new NPC names. The setting
-/// assumes a male-skewed combatant population — wanderers,
+/// assumes a male-skewed combatant population — nomads,
 /// soldiers, faction recruits — so the default name draw is
 /// heavily weighted male. Factions can override per their own
 /// `male_name_weight` knob (e.g. medical / civilian factions

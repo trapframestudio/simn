@@ -686,9 +686,9 @@ mod tests {
     fn fixture() -> (FactionRegistry, RelationDeltas, FactionId, FactionId) {
         let reg = load_default();
         let deltas = RelationDeltas::default();
-        let pwa = reg.id_of("pwa").unwrap();
+        let coalition = reg.id_of("coalition").unwrap();
         let looters = reg.id_of("looters").unwrap();
-        (reg, deltas, pwa, looters)
+        (reg, deltas, coalition, looters)
     }
 
     #[test]
@@ -754,14 +754,14 @@ mod tests {
 
     #[test]
     fn audience_filters_correctly() {
-        let (reg, deltas, pwa, looters) = fixture();
+        let (reg, deltas, coalition, looters) = fixture();
 
         // Same-faction event (AllyDown) only passes to same faction.
         let aud = audience_for(&WorldEventKind::AllyDown {
             id: NpcId(1),
-            faction: pwa,
+            faction: coalition,
         });
-        assert!(aud.passes(pwa, &reg, &deltas));
+        assert!(aud.passes(coalition, &reg, &deltas));
         assert!(!aud.passes(looters, &reg, &deltas));
 
         // EnemySighted reaches factions hostile to the target's faction.
@@ -769,25 +769,25 @@ mod tests {
             target_id: NpcId(2),
             target_faction: looters,
         });
-        // PWA is hostile to Looters per the canonical relation table.
-        assert!(aud.passes(pwa, &reg, &deltas));
+        // Coalition is hostile to Looters per the canonical relation table.
+        assert!(aud.passes(coalition, &reg, &deltas));
         // Looters hearing "enemy sighted at one of us" makes no sense.
         assert!(!aud.passes(looters, &reg, &deltas));
 
         // BaseFlip is global within the new owner's faction.
         let aud = audience_for(&WorldEventKind::BaseFlip {
-            new_owner: pwa,
+            new_owner: coalition,
             old_owner: None,
         });
         assert!(aud.is_global());
-        assert!(aud.passes(pwa, &reg, &deltas));
+        assert!(aud.passes(coalition, &reg, &deltas));
         assert!(!aud.passes(looters, &reg, &deltas));
 
         // Gunshot is everyone.
         let aud = audience_for(&WorldEventKind::Gunshot {
             caliber_class: CaliberClass::Intermediate,
         });
-        assert!(aud.passes(pwa, &reg, &deltas));
+        assert!(aud.passes(coalition, &reg, &deltas));
         assert!(aud.passes(looters, &reg, &deltas));
     }
 
@@ -808,9 +808,9 @@ mod tests {
 
     #[test]
     fn base_flip_is_infinite_radius() {
-        let (_reg, _deltas, pwa, _looters) = fixture();
+        let (_reg, _deltas, coalition, _looters) = fixture();
         let r = audible_radius_m(&WorldEventKind::BaseFlip {
-            new_owner: pwa,
+            new_owner: coalition,
             old_owner: None,
         });
         assert!(r.is_infinite());

@@ -444,7 +444,7 @@ pub fn goal_arbitration(
         // entries (written by `world_event_bus` drain and the
         // `npc_combat` damage path) and nominates per-kind
         // candidates with priorities slotted around combat. Only
-        // grouped NPCs participate — ungrouped lone NPCs (Wanderers,
+        // grouped NPCs participate — ungrouped lone NPCs (Nomads,
         // some Looters) don't share a blackboard and react only via
         // their individual aggro path. Cached per-group above.
         // Helper: cap-aware filter. For `LastKnownEnemy` candidates,
@@ -636,12 +636,7 @@ pub fn goal_arbitration(
                         let points = activity_points.points_in_region(region.0);
                         let mut best: Option<(f32, [f32; 3], u64)> = None;
                         for pt in points {
-                            if !matches!(
-                                pt.kind,
-                                crate::resources::ActivityKind::Stash
-                                    | crate::resources::ActivityKind::Lookout
-                                    | crate::resources::ActivityKind::Workbench
-                            ) {
+                            if !crate::poi::activity_is_hunt_target(pt.kind) {
                                 continue;
                             }
                             if let Some(f) = pt.faction {
@@ -721,8 +716,8 @@ pub fn goal_arbitration(
                             // not greed. Use the registry's relation
                             // walk so any "not-hostile" pair (e.g.
                             // sub-factions of the same parent) also
-                            // skips — it'd be weird for a Linemen
-                            // squad to loot a Linemen corpse.
+                            // skips — it'd be weird for a Vanguard
+                            // squad to loot a Vanguard corpse.
                             if entry.faction == faction.0 {
                                 continue;
                             }

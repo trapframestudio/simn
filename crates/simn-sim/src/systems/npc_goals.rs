@@ -1062,9 +1062,9 @@ fn advance_with_path(
 /// Pick a [`TravelStyle`] from faction archetype + active squad
 /// objective. Roughly:
 ///
-/// - **Patrol**: organized factions hug roads (PWA / Linemen / Federal /
-///   RevereGuard / CorporateResearch); off-road factions stay
-///   bushwhackers even on patrol (Wanderers, NoosphereWorshippers).
+/// - **Patrol**: road-friendly factions hug roads; off-road factions
+///   stay bushwhackers even on patrol. Driven by the faction's
+///   `road_friendly` config flag, not hardcoded names.
 /// - **Investigate / Explore**: bushwhacker for everyone (no roads to
 ///   trust at unknown coords).
 /// - **Other objectives or none**: faction default (Mixed for

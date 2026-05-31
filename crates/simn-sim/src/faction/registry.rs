@@ -5,7 +5,7 @@
 //! The registry is built from a single TOML file at sim startup
 //! (modders can layer more files via the mod manifest). Code never
 //! names factions by enum variant — it asks the registry by string
-//! id (`"pwa"`, `"linemen"`) and gets back a `FactionId` (a small
+//! id (`"coalition"`, `"coalition_vanguard"`) and gets back a `FactionId` (a small
 //! interned `u32`) for hot-path equality / hashing.
 //!
 //! Three pieces of runtime state, all keyed by string `name` for
@@ -59,12 +59,12 @@ pub struct FactionId(pub u32);
 #[derive(Clone, Debug, PartialEq)]
 pub struct FactionDef {
     pub id: FactionId,
-    /// Canonical lowercase ascii id, e.g. `"pwa"`, `"linemen"`. The
+    /// Canonical lowercase ascii id, e.g. `"coalition"`, `"coalition_vanguard"`. The
     /// stable identity used in saves, journals, and TOML cross-refs.
     pub name: String,
-    /// Display-cased name for UI, e.g. `"PWA"`, `"Linemen"`.
+    /// Display-cased name for UI, e.g. `"Coalition"`, `"Vanguard"`.
     pub display: String,
-    /// `Some(parent)` if this faction is a subfaction (Linemen → PWA).
+    /// `Some(parent)` if this faction is a subfaction (Vanguard → Coalition).
     /// Relation lookups walk the parent chain when no explicit
     /// override exists for a pair.
     pub parent: Option<FactionId>,
@@ -81,12 +81,12 @@ pub struct FactionDef {
     /// comes from per-NPC outfit material). 0..=255 per channel.
     pub debug_color: [u8; 3],
     /// Personality archetype that seeds NPC trait probabilities at
-    /// roll time. TOML-driven (`archetype = "disciplined"` etc.);
-    /// missing/unknown values fall back to
-    /// [`crate::components::PersonalityArchetype::from_faction_name`]
-    /// for a name-derived sensible default. The archetype tag set is
-    /// `disciplined / aggressive / greedy / curious / reverent /
-    /// default` (see [`crate::components::PersonalityArchetype`]).
+    /// roll time. TOML-driven (`archetype = "disciplined"` etc.); a
+    /// faction that omits it falls back to
+    /// [`crate::components::PersonalityArchetype::Default`]. The
+    /// archetype tag set is `disciplined / aggressive / greedy /
+    /// curious / reverent / default` (see
+    /// [`crate::components::PersonalityArchetype`]).
     pub archetype: crate::components::PersonalityArchetype,
     /// Optional per-faction skew on the multicultural name pool.
     /// Each entry maps a `NationalityBucket::name()` snake-case key
@@ -106,6 +106,73 @@ pub struct FactionDef {
     /// faction might set `0.55`, a strict-doctrine military
     /// subfaction might set `0.98`.
     pub male_name_weight: Option<f32>,
+    /// Squad size rolled at spawn (min..=max inclusive). `None` inherits
+    /// the parent's value, then a global default. TOML-driven via
+    /// `squad_size = { min = 3, max = 5 }`.
+    pub squad_size: Option<SquadSize>,
+    /// GOAP combat-doctrine action-cost weights. `None` uses the global
+    /// default. TOML-driven via `combat = { shoot = 1.5, advance = 4.5,
+    /// ... }`.
+    pub combat: Option<CombatCosts>,
+    /// Weighted base-kind preferences used when seeding this faction's
+    /// bases. Empty inherits the parent's, then a global default.
+    /// TOML-driven via `base_kinds = [{ kind = "Outpost", weight = 4 }]`.
+    pub base_kinds: Vec<BaseKindWeight>,
+}
+
+/// One weighted base-kind preference entry (`{ kind = "Outpost",
+/// weight = 4 }`). Data-driven; the engine no longer hardcodes which
+/// base kinds a faction seeds.
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+pub struct BaseKindWeight {
+    pub kind: crate::components::BaseKind,
+    pub weight: u32,
+}
+
+/// Squad-size range for a faction's spawns. Data-driven; the engine no
+/// longer hardcodes squad sizes per faction.
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+pub struct SquadSize {
+    pub min: u32,
+    pub max: u32,
+}
+
+impl Default for SquadSize {
+    fn default() -> Self {
+        Self { min: 2, max: 4 }
+    }
+}
+
+/// GOAP combat action-cost weights (doctrine) for a faction. Data-driven;
+/// the engine no longer hardcodes per-faction combat tuning. Higher cost
+/// makes the planner less likely to pick that action.
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+pub struct CombatCosts {
+    pub shoot: f32,
+    pub advance: f32,
+    pub move_to_cover: f32,
+    pub peek: f32,
+    pub flank: f32,
+    pub suppress: f32,
+    pub retreat: f32,
+    pub reload: f32,
+    pub heal_ally: f32,
+}
+
+impl Default for CombatCosts {
+    fn default() -> Self {
+        Self {
+            shoot: 1.0,
+            advance: 3.0,
+            move_to_cover: 2.0,
+            peek: 1.5,
+            flank: 3.0,
+            suppress: 2.5,
+            retreat: 4.0,
+            reload: 2.0,
+            heal_ally: 2.5,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Resource)]
@@ -142,7 +209,7 @@ pub struct RelationDeltas {
 }
 
 /// Per-player faction rep, isolated by SteamId. One player's bad
-/// blood with the Linemen does not bleed onto squadmates. Persisted
+/// blood with the Vanguard does not bleed onto squadmates. Persisted
 /// in saves (step 7).
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Resource)]
 pub struct PlayerReputation {
@@ -182,8 +249,8 @@ impl FactionRegistry {
 
     /// Walk `id`'s parent chain and return the first name a caller's
     /// closure recognizes. Used by gameplay tables (`weights_for`,
-    /// `squad_size_for`, `pick_base_kind`) so a subfaction (Choir,
-    /// Linemen, Cartel) inherits its parent's tuning by default.
+    /// `squad_size_for`, `pick_base_kind`) so a subfaction (Devout,
+    /// Vanguard, Smugglers) inherits its parent's tuning by default.
     /// Returns `None` if neither the id nor any ancestor matched.
     pub fn resolve_with_parent_walk<T, F>(&self, id: FactionId, mut pick: F) -> Option<T>
     where
@@ -202,12 +269,56 @@ impl FactionRegistry {
     /// Iterator over only the top-level factions (those without a
     /// parent). Used by region seeders that want to assign primary
     /// control to a faction that *owns* territory rather than to a
-    /// subfaction (Linemen, Choir, Ghost Teams, Registry, Recovery
-    /// Division, Cartel, Looters all have parents and never spawn as
+    /// subfaction (Vanguard, Devout, Directorate Recon, Registry, Recovery
+    /// Division, Smugglers, Looters all have parents and never spawn as
     /// region primaries — they spawn within their parent's territory
     /// when squad-size + objective rolls call for them).
     pub fn top_level(&self) -> impl Iterator<Item = &FactionDef> {
         self.defs.iter().filter(|d| d.parent.is_none())
+    }
+
+    /// Squad-size range for `id`, inheriting from the parent chain when a
+    /// subfaction doesn't author its own, then falling back to the global
+    /// default. Replaces the old hardcoded `squad_size_for_known` match.
+    pub fn squad_size(&self, id: FactionId) -> SquadSize {
+        self.resolve_with_parent_walk(id, |name| {
+            self.id_of(name).and_then(|i| self.def(i).squad_size)
+        })
+        .unwrap_or_default()
+    }
+
+    /// Combat-doctrine cost weights for `id`. No parent walk (matches the
+    /// legacy direct-name `faction_costs`): a subfaction that doesn't
+    /// author `combat` uses the default, not the parent's. Replaces the
+    /// old hardcoded `faction_costs` match.
+    pub fn combat_costs(&self, id: FactionId) -> CombatCosts {
+        self.def(id).combat.unwrap_or_default()
+    }
+
+    /// Weighted base-kind preferences for `id`, inheriting from the
+    /// parent chain when a subfaction doesn't author its own, then
+    /// falling back to a generic default. Replaces the old hardcoded
+    /// `base_kind_weights_for_known` match.
+    pub fn base_kind_weights(&self, id: FactionId) -> Vec<(crate::components::BaseKind, u32)> {
+        self.resolve_with_parent_walk(id, |name| {
+            let def = self.def(self.id_of(name)?);
+            if def.base_kinds.is_empty() {
+                None
+            } else {
+                Some(
+                    def.base_kinds
+                        .iter()
+                        .map(|w| (w.kind, w.weight))
+                        .collect::<Vec<_>>(),
+                )
+            }
+        })
+        .unwrap_or_else(|| {
+            vec![
+                (crate::components::BaseKind::Outpost, 3),
+                (crate::components::BaseKind::Safehouse, 1),
+            ]
+        })
     }
 }
 
@@ -408,6 +519,12 @@ struct FactionEntry {
     /// [`FactionDef::male_name_weight`].
     #[serde(default)]
     male_name_weight: Option<f32>,
+    #[serde(default)]
+    squad_size: Option<SquadSize>,
+    #[serde(default)]
+    combat: Option<CombatCosts>,
+    #[serde(default)]
+    base_kinds: Vec<BaseKindWeight>,
 }
 
 fn default_aggression() -> f32 {
@@ -483,24 +600,19 @@ impl std::error::Error for RegistryError {
     }
 }
 
-/// Canonical default registry shipped with the sim. Mirrors the
-/// legacy `Faction` enum + relation matrix while the migration is
-/// in flight; step 5 of the plan replaces it with the expanded
-/// canonical roster (Choir, Cartel, Ghost Teams, Registry, Recovery
-/// Division, Bandits umbrella). Modders who want a different base
-/// drop their own TOML at the sim's overlay path (lands in step 5).
-pub const DEFAULT_FACTIONS_TOML: &str = include_str!("../../content/factions.toml");
-
-/// Build the canonical default registry from [`DEFAULT_FACTIONS_TOML`].
-/// Used by `Sim::new` when no override TOML is found on disk. Cached
-/// process-wide via `OnceLock` — every `Sim::new` calls this and the
-/// parse cost was paying ~30+ tests' tax in the test suite.
+/// Build the default registry from the embedded example content pack
+/// (`content/factions/factions.toml`). Used by `Sim::new` when no
+/// override pack is supplied. Cached process-wide via `OnceLock` —
+/// every `Sim::new` calls this and the parse cost was paying ~30+
+/// tests' tax in the test suite.
 pub fn load_default() -> FactionRegistry {
     static CACHE: std::sync::OnceLock<FactionRegistry> = std::sync::OnceLock::new();
     CACHE
         .get_or_init(|| {
-            load_from_str(DEFAULT_FACTIONS_TOML)
-                .expect("DEFAULT_FACTIONS_TOML must parse — checked at compile time")
+            let toml = crate::ContentSource::Embedded
+                .read_str("factions/factions.toml")
+                .expect("embedded factions.toml present");
+            load_from_str(&toml).expect("embedded factions.toml must parse")
         })
         .clone()
 }
@@ -515,7 +627,7 @@ pub fn load_from(src: &crate::ContentSource) -> FactionRegistry {
         crate::ContentSource::Embedded => load_default(),
         other => {
             let text = other
-                .read_str("factions.toml")
+                .read_str("factions/factions.toml")
                 .unwrap_or_else(|e| panic!("factions content load failed: {e}"));
             load_from_str(&text).expect("factions.toml pack must parse")
         }
@@ -559,7 +671,7 @@ fn build_registry(cfg: ConfigFile) -> Result<FactionRegistry, RegistryError> {
     // Pass 1: assign ids, populate by_name. Defer parent resolution
     // until pass 2 (parents may reference factions later in the list,
     // even though we sort — a forward reference to a same-prefix name
-    // is still possible, e.g. `pwa_aux` comes after `pwa`).
+    // is still possible, e.g. `pwa_aux` comes after `coalition`).
     let mut defs: Vec<FactionDef> = Vec::with_capacity(entries.len());
     let mut by_name: HashMap<String, FactionId> = HashMap::with_capacity(entries.len());
     for (i, entry) in entries.iter().enumerate() {
@@ -568,9 +680,7 @@ fn build_registry(cfg: ConfigFile) -> Result<FactionRegistry, RegistryError> {
         }
         let id = FactionId(i as u32);
         by_name.insert(entry.name.clone(), id);
-        let archetype = entry.archetype.unwrap_or_else(|| {
-            crate::components::PersonalityArchetype::from_faction_name(&entry.name)
-        });
+        let archetype = entry.archetype.unwrap_or_default();
         defs.push(FactionDef {
             id,
             name: entry.name.clone(),
@@ -583,6 +693,9 @@ fn build_registry(cfg: ConfigFile) -> Result<FactionRegistry, RegistryError> {
             archetype,
             nationality_weights: entry.nationality_weights.clone(),
             male_name_weight: entry.male_name_weight,
+            squad_size: entry.squad_size,
+            combat: entry.combat,
+            base_kinds: entry.base_kinds.clone(),
         });
     }
 
@@ -660,7 +773,7 @@ mod tests {
     /// faction with a base relation to `parent` only.
     const FIXTURE: &str = r#"
 default_relation = "neutral"
-player_baseline = "wanderers"
+player_baseline = "nomads"
 
 [[faction]]
 name = "parent"
@@ -688,8 +801,8 @@ default_loadout = "other_basic"
 color = [70, 80, 90]
 
 [[faction]]
-name = "wanderers"
-display = "Wanderers"
+name = "nomads"
+display = "Nomads"
 base_aggression = 0.2
 default_loadout = "wanderer"
 color = [200, 200, 200]
@@ -713,12 +826,12 @@ value = "friendly"
     fn loads_and_assigns_stable_ids() {
         let reg = fixture_registry();
         assert_eq!(reg.count(), 4);
-        // Sorted by name: child, other, parent, wanderers.
+        // Sorted by name: child, nomads, other, parent.
         assert_eq!(reg.name_of(FactionId(0)), "child");
-        assert_eq!(reg.name_of(FactionId(1)), "other");
-        assert_eq!(reg.name_of(FactionId(2)), "parent");
-        assert_eq!(reg.name_of(FactionId(3)), "wanderers");
-        assert_eq!(reg.id_of("parent"), Some(FactionId(2)));
+        assert_eq!(reg.name_of(FactionId(1)), "nomads");
+        assert_eq!(reg.name_of(FactionId(2)), "other");
+        assert_eq!(reg.name_of(FactionId(3)), "parent");
+        assert_eq!(reg.id_of("parent"), Some(FactionId(3)));
     }
 
     #[test]
@@ -802,12 +915,12 @@ value = "friendly"
     fn missing_pair_uses_default() {
         let reg = fixture_registry();
         let deltas = RelationDeltas::default();
-        // wanderers vs other has no override and no parent
+        // nomads vs other has no override and no parent
         // inheritance possible (both top-level). Default = Neutral.
-        let wanderers = reg.id_of("wanderers").unwrap();
+        let nomads = reg.id_of("nomads").unwrap();
         let other = reg.id_of("other").unwrap();
         assert_eq!(
-            faction_relation(&reg, &deltas, wanderers, other),
+            faction_relation(&reg, &deltas, nomads, other),
             Relation::Neutral
         );
     }
@@ -824,7 +937,7 @@ value = "friendly"
             player_relation(&reg, &rep, &deltas, 1, parent),
             Relation::Hostile
         );
-        // Player B is untouched — falls back to baseline (wanderers
+        // Player B is untouched — falls back to baseline (nomads
         // has no override vs parent → Neutral).
         assert_eq!(
             player_relation(&reg, &rep, &deltas, 2, parent),
@@ -838,7 +951,7 @@ value = "friendly"
         let deltas = RelationDeltas::default();
         let rep = PlayerReputation::default();
         let other = reg.id_of("other").unwrap();
-        // No player rep for player 7. Baseline = wanderers; wanderers
+        // No player rep for player 7. Baseline = nomads; nomads
         // has no explicit relation to other (default Neutral).
         assert_eq!(
             player_relation(&reg, &rep, &deltas, 7, other),
@@ -908,55 +1021,55 @@ value = "-30"
         assert_eq!(reg.count(), 16, "canonical TOML has 16 factions");
         for name in [
             // top-level
-            "pwa",
-            "revere_guard",
-            "federal",
-            "gulf_compact",
-            "aegis_pacific",
-            "attuned",
-            "merged",
-            "bandits",
-            "wanderers",
+            "coalition",
+            "homesteaders",
+            "directorate",
+            "syndicate",
+            "consortium",
+            "the_order",
+            "the_afflicted",
+            "raiders",
+            "nomads",
             // subfactions
-            "linemen",
-            "ghost_teams",
-            "registry",
-            "recovery_division",
-            "choir",
+            "coalition_vanguard",
+            "directorate_recon",
+            "syndicate_enforcers",
+            "consortium_recovery",
+            "order_devout",
             "looters",
-            "cartel",
+            "smugglers",
         ] {
             assert!(reg.id_of(name).is_some(), "registry should contain {name}",);
         }
     }
 
     /// Subfactions inherit their parent's relation matrix unless a
-    /// specific override exists. Spot-check the bandits umbrella:
-    /// looters has no explicit pwa override → inherits bandits ↔ pwa
-    /// = Hostile. Cartel's gulf_compact override flips bandits ↔
+    /// specific override exists. Spot-check the raiders umbrella:
+    /// looters has no explicit coalition override → inherits raiders ↔ coalition
+    /// = Hostile. Smugglers's syndicate override flips raiders ↔
     /// compact (Cold) into Neutral.
     #[test]
     fn subfaction_inherits_parent_relations() {
         let reg = load_default();
         let deltas = RelationDeltas::default();
-        let pwa = reg.id_of("pwa").unwrap();
+        let coalition = reg.id_of("coalition").unwrap();
         let looters = reg.id_of("looters").unwrap();
-        let cartel = reg.id_of("cartel").unwrap();
-        let compact = reg.id_of("gulf_compact").unwrap();
+        let smugglers = reg.id_of("smugglers").unwrap();
+        let compact = reg.id_of("syndicate").unwrap();
         assert_eq!(
-            faction_relation(&reg, &deltas, looters, pwa),
+            faction_relation(&reg, &deltas, looters, coalition),
             Relation::Hostile,
-            "looters inherits bandits ↔ pwa",
+            "looters inherits raiders ↔ coalition",
         );
         assert_eq!(
-            faction_relation(&reg, &deltas, cartel, compact),
+            faction_relation(&reg, &deltas, smugglers, compact),
             Relation::Neutral,
-            "cartel override flips bandits ↔ compact from Cold to Neutral",
+            "smugglers override flips raiders ↔ compact from Cold to Neutral",
         );
         assert_eq!(
-            faction_relation(&reg, &deltas, cartel, pwa),
+            faction_relation(&reg, &deltas, smugglers, coalition),
             Relation::Hostile,
-            "cartel inherits parent's bandits ↔ pwa",
+            "smugglers inherits parent's raiders ↔ coalition",
         );
     }
 

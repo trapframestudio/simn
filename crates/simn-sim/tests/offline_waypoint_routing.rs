@@ -68,7 +68,7 @@ fn offline_npc_routes_along_chain_around_painted_block() {
     // doesn't have any bases unless we add them explicitly, so
     // we'll use `spawn_offline_npc_for_test` to bypass spawning +
     // target-pick and just check the chain resolution + traversal.
-    let npc_id = sim.spawn_offline_npc_for_test("pwa", TEST_REGION_ID, [-40.0, 0.0]);
+    let npc_id = sim.spawn_offline_npc_for_test("coalition", TEST_REGION_ID, [-40.0, 0.0]);
 
     // Directly set the NPC's target to the far right and let the
     // movement system resolve a chain through the graph. This

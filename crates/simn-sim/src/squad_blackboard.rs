@@ -21,7 +21,7 @@
 //!
 //! Blackboards are derived state — they're rebuilt from world state +
 //! recent events on tier transition (decided 2026-05-05; matches
-//! STALKER's design). NOT journaled. This module never serialises
+//! the genre's design). NOT journaled. This module never serialises
 //! anything; reload from snapshot starts every group's blackboard
 //! empty.
 //!

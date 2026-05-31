@@ -160,11 +160,11 @@ fn merged_never_in_random_seed() {
                 continue;
             }
             let c = sim.region_control(*region_id).unwrap();
-            assert_ne!(c.primary.as_deref(), Some("merged"));
-            assert!(!c.contested_by.iter().any(|f| f == "merged"));
+            assert_ne!(c.primary.as_deref(), Some("the_afflicted"));
+            assert!(!c.contested_by.iter().any(|f| f == "the_afflicted"));
             let merged_id = sim
                 .faction_registry()
-                .id_of("merged")
+                .id_of("the_afflicted")
                 .expect("registry has merged");
             for base in sim.bases_in_region(*region_id) {
                 assert_ne!(base.faction, merged_id);
@@ -230,11 +230,11 @@ fn spawned_npc_carries_registry_faction_id() {
     // it against the active registry.
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), RegionGraph::default_test_graph()).unwrap();
-    let id = sim.spawn_npc_for_test("wanderers", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("nomads", 1, [0.0, 0.0, 0.0], None);
     let expected_id = sim
         .faction_registry()
-        .id_of("wanderers")
-        .expect("registry has wanderers");
+        .id_of("nomads")
+        .expect("registry has nomads");
     let actual = sim.npc_in_faction_for_test(id).expect("InFaction present");
     assert_eq!(actual.0, expected_id);
 }
@@ -242,25 +242,28 @@ fn spawned_npc_carries_registry_faction_id() {
 #[test]
 fn faction_relation_drift_persists_across_save_load() {
     // Step 7 contract: drift events journal + survive a snapshot
-    // round-trip. Push pwa <-> revere_guard from Hostile (-100) up
+    // round-trip. Push coalition <-> homesteaders from Hostile (-100) up
     // by +120, expect the band to land at Warm on read; then
     // shutdown + reload and verify the same.
     let dir = TempDir::new().unwrap();
     let graph = RegionGraph::default_test_graph();
     {
         let mut sim = Sim::new(paths(&dir), graph.clone()).unwrap();
-        sim.shift_faction_relation("pwa", "revere_guard", 180, "test_thaw")
+        sim.shift_faction_relation("coalition", "homesteaders", 180, "test_thaw")
             .unwrap();
-        let pwa = sim.faction_registry().id_of("pwa").unwrap();
-        let rg = sim.faction_registry().id_of("revere_guard").unwrap();
-        assert_eq!(sim.faction_relation(pwa, rg), simn_sim::Relation::Friendly);
+        let coalition = sim.faction_registry().id_of("coalition").unwrap();
+        let rg = sim.faction_registry().id_of("homesteaders").unwrap();
+        assert_eq!(
+            sim.faction_relation(coalition, rg),
+            simn_sim::Relation::Friendly
+        );
         sim.shutdown().unwrap();
     }
     let sim = Sim::load_or_new(paths(&dir), graph).unwrap();
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
-    let rg = sim.faction_registry().id_of("revere_guard").unwrap();
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
+    let rg = sim.faction_registry().id_of("homesteaders").unwrap();
     assert_eq!(
-        sim.faction_relation(pwa, rg),
+        sim.faction_relation(coalition, rg),
         simn_sim::Relation::Friendly,
         "drift should survive save/load",
     );
@@ -273,21 +276,33 @@ fn player_rep_drift_persists_and_isolates() {
     let graph = RegionGraph::default_test_graph();
     {
         let mut sim = Sim::new(paths(&dir), graph.clone()).unwrap();
-        sim.shift_player_rep(1, "linemen", -200, "killed_crew_chief")
+        sim.shift_player_rep(1, "coalition_vanguard", -200, "killed_crew_chief")
             .unwrap();
-        sim.shift_player_rep(2, "linemen", 50, "delivered_supplies")
+        sim.shift_player_rep(2, "coalition_vanguard", 50, "delivered_supplies")
             .unwrap();
         sim.shutdown().unwrap();
     }
     let sim = Sim::load_or_new(paths(&dir), graph).unwrap();
-    let linemen = sim.faction_registry().id_of("linemen").unwrap();
+    let coalition_vanguard = sim.faction_registry().id_of("coalition_vanguard").unwrap();
     let rep = sim.player_reputation();
     let deltas = sim.relation_deltas();
-    let r1 = simn_sim::registry_player_relation(sim.faction_registry(), rep, deltas, 1, linemen);
-    let r2 = simn_sim::registry_player_relation(sim.faction_registry(), rep, deltas, 2, linemen);
+    let r1 = simn_sim::registry_player_relation(
+        sim.faction_registry(),
+        rep,
+        deltas,
+        1,
+        coalition_vanguard,
+    );
+    let r2 = simn_sim::registry_player_relation(
+        sim.faction_registry(),
+        rep,
+        deltas,
+        2,
+        coalition_vanguard,
+    );
     assert_eq!(r1, simn_sim::Relation::Hostile, "player 1 trashed rep");
-    // Player 2 nudged +50; baseline (wanderers vs linemen) is Cold (-50).
-    // wanderers ↔ linemen = Cold per the canonical TOML; +50 on top of
+    // Player 2 nudged +50; baseline (nomads vs coalition_vanguard) is Cold (-50).
+    // nomads ↔ coalition_vanguard = Cold per the canonical TOML; +50 on top of
     // the cold base lifts player 2's effective rep into Neutral band
     // (the player rep score itself is +50; the baseline isn't applied
     // when an explicit player rep entry exists).

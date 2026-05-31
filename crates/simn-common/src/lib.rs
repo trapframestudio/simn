@@ -1,1 +1,1 @@
-//! simn-common — Shared utilities for Noosphere.
+//! simn-common — Shared utilities for SIMN.

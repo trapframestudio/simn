@@ -27,8 +27,8 @@ fn offline_combat_death_lands_in_pda_log() {
 
     // Two hostile clusters in region 1 (offline).
     for i in 0..6 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);
-        sim.spawn_offline_npc_for_test("bandits", 1, [(i as f32) * 3.0 + 1.0, 20.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 3.0, 0.0]);
+        sim.spawn_offline_npc_for_test("raiders", 1, [(i as f32) * 3.0 + 1.0, 20.0]);
     }
 
     let initial_high_water = sim.pda_log_high_water();
@@ -39,8 +39,8 @@ fn offline_combat_death_lands_in_pda_log() {
         matches!(
             &e.event,
             PdaEvent::OfflineCombatDeath { killed_faction, killer_faction, .. }
-                if (killed_faction == "pwa" && killer_faction == "bandits")
-                    || (killed_faction == "bandits" && killer_faction == "pwa")
+                if (killed_faction == "coalition" && killer_faction == "raiders")
+                    || (killed_faction == "raiders" && killer_faction == "coalition")
         )
     });
     assert!(
@@ -61,8 +61,8 @@ fn offline_gunfire_coalesces_to_one_pda_entry_per_region_per_tick() {
     sim.set_active_region(2);
 
     for i in 0..8 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 4.0, 0.0]);
-        sim.spawn_offline_npc_for_test("bandits", 1, [(i as f32) * 4.0 + 1.0, 30.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 4.0, 0.0]);
+        sim.spawn_offline_npc_for_test("raiders", 1, [(i as f32) * 4.0 + 1.0, 30.0]);
     }
 
     let initial_high_water = sim.pda_log_high_water();
@@ -91,8 +91,8 @@ fn pda_log_seq_bookmark_prevents_redelivery() {
     sim.set_active_region(2);
 
     for i in 0..4 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);
-        sim.spawn_offline_npc_for_test("bandits", 1, [(i as f32) * 3.0 + 1.0, 25.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 3.0, 0.0]);
+        sim.spawn_offline_npc_for_test("raiders", 1, [(i as f32) * 3.0 + 1.0, 25.0]);
     }
 
     // First poll — get everything from boot.
@@ -120,8 +120,8 @@ fn pda_log_high_water_grows_as_events_arrive() {
     let initial = sim.pda_log_high_water();
 
     for i in 0..4 {
-        sim.spawn_offline_npc_for_test("pwa", 1, [(i as f32) * 3.0, 0.0]);
-        sim.spawn_offline_npc_for_test("bandits", 1, [(i as f32) * 3.0 + 1.0, 20.0]);
+        sim.spawn_offline_npc_for_test("coalition", 1, [(i as f32) * 3.0, 0.0]);
+        sim.spawn_offline_npc_for_test("raiders", 1, [(i as f32) * 3.0 + 1.0, 20.0]);
     }
     tick_offline_ticks(&mut sim, 30);
 

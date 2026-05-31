@@ -305,29 +305,24 @@ pub enum PersonalityDrive {
 
 /// Faction archetype that drives the personality-trait probability
 /// roll. Each faction declares its archetype in `factions.toml`
-/// (`archetype = "disciplined"` etc.). The
-/// [`Self::from_faction_name`] table remains as a fallback for
-/// factions whose TOML predates the field — it ships sensible
-/// defaults for the canonical roster.
+/// (`archetype = "disciplined"` etc.). A faction that omits the field
+/// falls back to [`Self::Default`].
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum PersonalityArchetype {
-    /// Drilled state actor. PWA, Federal, Aegis Pacific, Revere
-    /// Guard, and their elite subfactions. High `disciplined` +
-    /// `loyal`, moderate `aggressive`.
+    /// Drilled state or corporate actor and their elite subfactions.
+    /// High `disciplined` + `loyal`, moderate `aggressive`.
     Disciplined,
-    /// Rapid violence as the first answer. Linemen, Cartel,
-    /// Merged. High `aggressive` + `bloodthirsty`, moderate
-    /// `reckless`, lower `cautious`.
+    /// Rapid violence as the first answer. High `aggressive` +
+    /// `bloodthirsty`, moderate `reckless`, lower `cautious`.
     Aggressive,
-    /// Profit-driven, opportunistic. Looters, Bandits, Gulf
-    /// Compact, Registry. High `greedy` + `reckless`, low `loyal`.
+    /// Profit-driven, opportunistic. High `greedy` + `reckless`,
+    /// low `loyal`.
     Greedy,
-    /// Drifters. Wanderers. High `curious` + `solitary`,
-    /// moderate `cautious`, low `aggressive`.
+    /// Loner / wanderer. High `curious` + `solitary`, moderate
+    /// `cautious`, low `aggressive`.
     Curious,
-    /// Belief-driven. Attuned, Choir. High `loyal` + `social`,
-    /// moderate `disciplined`.
+    /// Belief-driven. High `loyal` + `social`, moderate `disciplined`.
     Reverent,
     /// Fallback when no archetype is defined for the faction.
     /// Uniform 50/50 across all traits.
@@ -336,21 +331,6 @@ pub enum PersonalityArchetype {
 }
 
 impl PersonalityArchetype {
-    /// Map a faction name (registry key) to the archetype that
-    /// drives the trait roll. Unknown / unmapped names fall back to
-    /// `Default`.
-    pub fn from_faction_name(name: &str) -> Self {
-        match name {
-            "pwa" | "federal" | "ghost_teams" | "aegis_pacific" | "recovery_division"
-            | "revere_guard" => Self::Disciplined,
-            "linemen" | "cartel" | "merged" => Self::Aggressive,
-            "looters" | "bandits" | "gulf_compact" | "registry" => Self::Greedy,
-            "wanderers" => Self::Curious,
-            "attuned" | "choir" => Self::Reverent,
-            _ => Self::Default,
-        }
-    }
-
     /// Per-trait probability of `true` on this archetype. Each value
     /// in `[0.0, 1.0]`; the rolling function compares each trait's
     /// probability against an independent uniform draw. Tuned by eye
@@ -407,7 +387,7 @@ pub struct NpcCharacter {
     pub character_id: CharacterId,
     pub stats: NpcStats,
     pub personality: PersonalityTraits,
-    /// Universal STALKER-style threat tier derived from
+    /// Universal classic threat tier derived from
     /// [`Self::effective_competence`]. Refreshed on `roll` and on
     /// every kill via [`Self::record_kill`].
     pub rank: NpcRank,
@@ -1050,7 +1030,7 @@ pub enum WaterKind {
 /// faction-agnostic.
 ///
 /// Not serialized via the auto-derived path — persistence emits the
-/// faction's registry **name string** (`"pwa"`, `"linemen"`) so
+/// faction's registry **name string** (`"coalition"`, `"coalition_vanguard"`) so
 /// saves stay valid across registry edits. Loaders rebuild the
 /// `FactionId` by name lookup against the active registry.
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
@@ -1064,7 +1044,7 @@ pub struct Base {
     pub kind: BaseKind,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BaseKind {
     Checkpoint,
     Outpost,
@@ -1072,7 +1052,7 @@ pub enum BaseKind {
     Headquarters,
     ResearchPost,
     /// Neutral, non-contestable rest spot. Anyone can use it at any
-    /// time; no faction owns it (stored with `Faction::Wanderers` as
+    /// time; no faction owns it (stored with `Faction::Nomads` as
     /// the neutral placeholder, but territorial control ignores it).
     CampSite,
 }
@@ -1108,14 +1088,7 @@ impl BaseKind {
     /// follow-up iteration; these are the placeholder
     /// footprints for the procedurally-seeded set.
     pub fn nav_footprint_xz_m(self) -> Option<[f32; 2]> {
-        match self {
-            BaseKind::Checkpoint => Some([3.0, 3.0]),
-            BaseKind::Outpost => Some([5.0, 5.0]),
-            BaseKind::Safehouse => Some([4.0, 4.0]),
-            BaseKind::Headquarters => Some([8.0, 8.0]),
-            BaseKind::ResearchPost => Some([6.0, 6.0]),
-            BaseKind::CampSite => None,
-        }
+        crate::poi::base_nav_footprint(self)
     }
 }
 
@@ -1174,7 +1147,7 @@ pub struct DwellState {
 
 /// Marks a `WorldContainer` entity as having been spawned from a dead
 /// NPC. Carries the dead NPC's id and faction so the loot arbiter
-/// can pick targets by faction relations (a bandit NPC's corpse is a
+/// can pick targets by faction relations (a raider NPC's corpse is a
 /// more attractive target than a same-faction corpse). Not journaled
 /// — corpse containers reload from `WorldContainerSpawned` deltas;
 /// the marker is recreated on load by re-spawn / replay paths.
@@ -1221,7 +1194,7 @@ pub struct Lifespan {
 /// Marks an NPC as part of a coherent group (squad, gang, cult cell).
 /// Group members share a deterministic RNG seed when picking new
 /// patrol targets, so they walk toward the same destination instead
-/// of dispersing. Lone NPCs (Wanderers, sometimes Looters/Compact
+/// of dispersing. Lone NPCs (Nomads, sometimes Looters/Compact
 /// contractors) don't have this component.
 #[derive(Component, Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Group {
@@ -1539,7 +1512,7 @@ pub enum GoalKind {
         target_container: Option<u64>,
     },
     /// Bloodthirsty trait drive to fight for fun, faction-cultural
-    /// (Wanderers / Looters specifically). Target arrives with the
+    /// (Nomads / Looters specifically). Target arrives with the
     /// arena / spar concept.
     Bloodsport,
     /// React to a blackboard urgency (HeardGunshot, UnderFireAt).
@@ -1623,7 +1596,7 @@ impl Default for ActiveGoal {
 /// their age. Stacks of the same item id with different `spawned_tick`
 /// stay separate so older instances expire first (no age mixing).
 ///
-/// In the grid model (Tarkov/STALKER hybrid) this struct represents
+/// In the grid model (grid-based) this struct represents
 /// the **stack data** independent of where it sits — see
 /// [`PlacedItem`] for the position binding. Kept as its own struct
 /// so callers don't have to drag `(x, y, rotation)` around when they
@@ -1679,8 +1652,8 @@ pub struct MagazineState {
     pub variant: Option<ItemId>,
 }
 
-/// Cardinal-only rotation for grid-placed items. Tarkov / Resident
-/// Evil 4 style: items are either upright (`Deg0`) or rotated 90°
+/// Cardinal-only rotation for grid-placed items. Items are either
+/// upright (`Deg0`) or rotated 90°
 /// counter-clockwise (`Deg90`). 180° / 270° aren't necessary because
 /// item footprints are rectangular — the visible orientation is
 /// purely cosmetic on the third 90.
@@ -1711,7 +1684,7 @@ pub struct PlacedItem {
     pub inner_grid: Option<GridInventory>,
 }
 
-/// 2D grid inventory — Tarkov/STALKER hybrid model. Each
+/// 2D grid inventory — grid-based model. Each
 /// [`PlacedItem`] occupies a rectangle (`def.size`, possibly rotated)
 /// anchored at `(x, y)` with the origin in the top-left. Two items
 /// may not overlap.
@@ -2013,7 +1986,7 @@ fn default_depth_tier() -> u8 {
 pub struct NearCampfire(pub bool);
 
 /// Tier of the nearest workbench the player is standing next to.
-/// `None` = no workbench in range. Matches GAMMA progression:
+/// `None` = no workbench in range. Matches the genre progression:
 /// Basic / Advanced / Expert. Used by `Sim::queue_craft` to gate
 /// recipes whose `required_context` names a bench tier — higher
 /// tiers satisfy lower-tier requirements (standing at an Advanced

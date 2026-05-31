@@ -20,7 +20,7 @@
 //!
 //! Format:
 //! ```text
-//! [8]     magic: b"NSPHJRNL"
+//! [8]     magic: b"SIMNJRNL"
 //! [4]     version: u32 LE
 //! [8]     snapshot_tick: u64 LE  (paired snapshot tick; 0 = no snapshot yet)
 //! record*

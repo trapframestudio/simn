@@ -2,8 +2,8 @@
 //!
 //! Every `SPAWN_INTERVAL_TICKS` ticks: walk `PopulationTargets` and,
 //! for each (region, faction) under-target, spawn a *squad* near a
-//! same-faction base. Squad size depends on the faction (PWA patrols
-//! 4–6, Looter gangs 2–4, Wanderers solo, etc.). All members share a
+//! same-faction base. Squad size depends on the faction (Coalition patrols
+//! 4–6, Looter gangs 2–4, Nomads solo, etc.). All members share a
 //! `Group` so `tick_npc_goals` can give them the same patrol target
 //! — they walk together rather than dispersing.
 //!
@@ -34,47 +34,19 @@ const SPAWN_INTERVAL_TICKS: u64 = 50;
 const LIFESPAN_MIN_TICKS: u64 = 30_000;
 const LIFESPAN_MAX_TICKS: u64 = 80_000;
 
-/// Roll a squad size for the named faction. Returns `None` for
-/// unknown names; subfactions inherit via the registry parent walk
-/// in [`squad_size_for_id`]. Wanderers use a weighted distribution
-/// (65/25/10 solo/pair/trio); Merged are always solo.
-fn squad_size_for_known(name: &str, rng: &mut ChaCha8Rng) -> Option<usize> {
-    Some(match name {
-        "pwa" => rng.gen_range(4..=5),
-        "linemen" => rng.gen_range(3..=4), // tighter elite cells
-        "federal" => rng.gen_range(4..=5),
-        "ghost_teams" => rng.gen_range(3..=4), // 4-person cells canon
-        "aegis_pacific" => rng.gen_range(4..=5),
-        "recovery_division" => rng.gen_range(3..=4),
-        "revere_guard" => rng.gen_range(3..=5),
-        "bandits" => rng.gen_range(3..=5),
-        "cartel" => rng.gen_range(3..=4), // organized crews
-        "attuned" => rng.gen_range(3..=5),
-        "choir" => rng.gen_range(3..=4), // hardened cells
-        "gulf_compact" => rng.gen_range(2..=4),
-        "registry" => rng.gen_range(3..=4), // small lethal teams
-        "wanderers" => {
-            let r: f32 = rng.gen_range(0.0..1.0);
-            if r < 0.65 {
-                1
-            } else if r < 0.90 {
-                2
-            } else {
-                3
-            }
-        }
-        "merged" => 1,
-        _ => return None,
-    })
-}
-
+/// Roll a squad size for a faction from its config-driven `squad_size`
+/// range (`factions.toml`). Subfactions inherit their parent's range,
+/// then a global default, via the registry. The engine no longer
+/// hardcodes per-faction squad sizes.
 fn squad_size_for_id(
     reg: &crate::faction::registry::FactionRegistry,
     id: crate::faction::registry::FactionId,
     rng: &mut ChaCha8Rng,
 ) -> usize {
-    reg.resolve_with_parent_walk(id, |name| squad_size_for_known(name, rng))
-        .unwrap_or_else(|| rng.gen_range(2..=4))
+    let s = reg.squad_size(id);
+    let min = s.min.max(1);
+    let max = s.max.max(min);
+    rng.gen_range(min..=max) as usize
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -341,7 +313,7 @@ fn spawn_one_squad(
         // share the same id, solos get a unique synthetic id
         // (derived from their NpcId) so they participate in
         // squad_planner like a 1-member squad. Without this,
-        // Wanderers / Merged / any solo-by-faction spawn was
+        // Nomads / Merged / any solo-by-faction spawn was
         // left out of objective rolling entirely and just idled
         // at spawn until a blackboard signal pulled them in.
         let resolved_group_id = if squad_size > 1 {

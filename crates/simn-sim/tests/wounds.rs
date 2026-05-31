@@ -459,7 +459,7 @@ fn npcs_spawn_with_empty_wounds_and_active_effects() {
     // they carry the components but with empty payloads.
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let wounds = sim
         .npc_wounds_for_test(id)
         .expect("NPC should carry Wounds component");
@@ -479,7 +479,7 @@ fn npc_wounds_survive_snapshot_round_trip() {
     let graph = RegionGraph::default_test_graph();
     let id = {
         let mut sim = Sim::new(paths(&dir), graph.clone()).unwrap();
-        let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+        let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
         sim.tick().unwrap();
         sim.shutdown().unwrap();
         id
@@ -499,7 +499,7 @@ fn npc_wounds_survive_snapshot_round_trip() {
 fn npc_light_damage_spawns_light_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 15.0)
         .unwrap();
     let wounds = sim.npc_wounds_for_test(id).unwrap();
@@ -515,7 +515,7 @@ fn npc_light_damage_spawns_light_bleed() {
 fn npc_heavy_damage_spawns_heavy_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 30.0)
         .unwrap();
     let wounds = sim.npc_wounds_for_test(id).unwrap();
@@ -528,7 +528,7 @@ fn npc_heavy_damage_spawns_heavy_bleed() {
 fn npc_sub_threshold_damage_no_wound() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 5.0)
         .unwrap();
     let wounds = sim.npc_wounds_for_test(id).unwrap();
@@ -542,7 +542,7 @@ fn npc_bleed_drains_part_hp_over_time() {
     // initial hit amount because the untreated wound drains per tick.
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 30.0)
         .unwrap();
     // Population targets in the default graph are real; zero them so
@@ -599,10 +599,10 @@ fn npc_combat_spawns_journaled_wound() {
             sim.set_population_target_for_test(r, name, 0);
         }
     }
-    let pwa = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
-    let bandit = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
-    sim.set_npc_yaw_for_test(pwa, 0.0);
-    sim.set_npc_yaw_for_test(bandit, std::f32::consts::PI);
+    let coalition = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
+    let raider = sim.spawn_npc_for_test("looters", 1, [10.0, 0.0, 0.0], None);
+    sim.set_npc_yaw_for_test(coalition, 0.0);
+    sim.set_npc_yaw_for_test(raider, std::f32::consts::PI);
     // Tick past several FIRE_INTERVAL_TICKS (50) so combat fires, and
     // accumulate every per-tick delta. `drain_tick_deltas` only holds
     // the most-recent tick's deltas, so we drain after each tick.
@@ -611,12 +611,12 @@ fn npc_combat_spawns_journaled_wound() {
         sim.tick().unwrap();
         all_deltas.extend(sim.drain_tick_deltas());
     }
-    let pwa_wounds = sim.npc_wounds_for_test(pwa).unwrap();
-    let bandit_wounds = sim.npc_wounds_for_test(bandit).unwrap();
+    let pwa_wounds = sim.npc_wounds_for_test(coalition).unwrap();
+    let bandit_wounds = sim.npc_wounds_for_test(raider).unwrap();
     let any_combat_wounds = !pwa_wounds.0.is_empty() || !bandit_wounds.0.is_empty();
     assert!(
         any_combat_wounds,
-        "combat should have spawned at least one wound between pwa+bandit"
+        "combat should have spawned at least one wound between coalition+raider"
     );
     // Collect every `NpcWoundAdded` delta journaled for either
     // combatant across the combat window.
@@ -624,7 +624,7 @@ fn npc_combat_spawns_journaled_wound() {
         .iter()
         .filter_map(|d| match d {
             simn_sim::WorldDelta::NpcWoundAdded { id, body_part, .. }
-                if *id == pwa || *id == bandit =>
+                if *id == coalition || *id == raider =>
             {
                 Some((*id, *body_part))
             }
@@ -639,7 +639,7 @@ fn npc_combat_spawns_journaled_wound() {
     // still present on the NPC — i.e. the journal reflects real state,
     // not a phantom delta.
     let present = |id: NpcId, part: BodyPart| {
-        let w = if id == pwa {
+        let w = if id == coalition {
             &pwa_wounds
         } else {
             &bandit_wounds
@@ -649,7 +649,7 @@ fn npc_combat_spawns_journaled_wound() {
     assert!(
         journaled.iter().any(|(id, part)| present(*id, *part)),
         "a journaled NpcWoundAdded should match a wound currently on the NPC; \
-         journaled={journaled:?}, pwa={:?}, bandit={:?}",
+         journaled={journaled:?}, coalition={:?}, raider={:?}",
         pwa_wounds.0,
         bandit_wounds.0,
     );
@@ -661,7 +661,7 @@ fn npc_combat_spawns_journaled_wound() {
 fn bandage_stops_npc_light_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 15.0)
         .unwrap();
     sim.apply_bandage_npc(id, BodyPart::Torso).unwrap();
@@ -673,7 +673,7 @@ fn bandage_stops_npc_light_bleed() {
 fn tourniquet_stops_any_npc_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::LeftLeg, 30.0)
         .unwrap();
     sim.apply_tourniquet_npc(id, BodyPart::LeftLeg).unwrap();
@@ -688,7 +688,7 @@ fn tourniquet_stops_any_npc_bleed() {
 fn remove_npc_tourniquet_resumes_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::LeftLeg, 30.0)
         .unwrap();
     sim.apply_tourniquet_npc(id, BodyPart::LeftLeg).unwrap();
@@ -705,7 +705,7 @@ fn remove_npc_tourniquet_resumes_bleed() {
 fn stitch_closes_npc_bandaged_wound() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 15.0)
         .unwrap();
     sim.apply_bandage_npc(id, BodyPart::Torso).unwrap();
@@ -718,7 +718,7 @@ fn stitch_closes_npc_bandaged_wound() {
 fn wound_pack_stops_heavy_npc_bleed() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 30.0)
         .unwrap();
     sim.apply_wound_pack_npc(id, BodyPart::Torso).unwrap();
@@ -733,7 +733,7 @@ fn wound_pack_stops_heavy_npc_bleed() {
 fn disinfect_prevents_npc_infection() {
     let dir = TempDir::new().unwrap();
     let mut sim = fresh_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 15.0)
         .unwrap();
     sim.apply_disinfectant_npc(id, BodyPart::Torso).unwrap();
@@ -763,7 +763,7 @@ fn antibiotics_clear_npc_infection() {
             sim.set_population_target_for_test(r, name, 0);
         }
     }
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::Torso, 15.0)
         .unwrap();
     for _ in 0..50 {

@@ -119,7 +119,7 @@ pub enum WorldDelta {
     /// Same shape as `RadiationChanged`.
     ToxicityChanged { steam_id: u64, value: f32 },
     /// A new NPC entered the world. `faction` is the registry name
-    /// string (`"pwa"`) so journals stay valid across registry edits.
+    /// string (`"coalition"`) so journals stay valid across registry edits.
     NpcSpawned {
         id: NpcId,
         faction: String,

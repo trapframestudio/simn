@@ -231,7 +231,6 @@ pub fn npc_tactical(
         };
 
         if needs_replan {
-            let faction_name = faction_registry.name_of(npc_faction.0);
             let has_ally_down = group
                 .map(|g| {
                     blackboards
@@ -249,7 +248,8 @@ pub fn npc_tactical(
                 has_ally_down && current_role == CombatRole::Medic,
                 squad_should_retreat,
             );
-            let actions = crate::goap_actions::combat_actions(faction_name, current_role);
+            let costs = faction_registry.combat_costs(npc_faction.0);
+            let actions = crate::goap_actions::combat_actions(&costs, current_role);
             if let Some(plan) = crate::goap::plan(ws, &goals, &actions, 6) {
                 let comp = GoapPlanComp {
                     actions: plan.actions,

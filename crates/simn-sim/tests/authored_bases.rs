@@ -18,12 +18,17 @@ fn build_sim() -> Sim {
 #[test]
 fn register_spawns_full_component_tuple() {
     let mut sim = build_sim();
-    let pwa = sim
+    let coalition = sim
         .faction_registry()
-        .id_of("pwa")
-        .expect("factions.toml must define `pwa`");
+        .id_of("coalition")
+        .expect("factions.toml must define `coalition`");
     let entity = sim
-        .register_authored_base(TEST_REGION_ID, [100.0, 0.0, 200.0], BaseKind::Outpost, pwa)
+        .register_authored_base(
+            TEST_REGION_ID,
+            [100.0, 0.0, 200.0],
+            BaseKind::Outpost,
+            coalition,
+        )
         .expect("register");
     // Verify the spawn shape via world_for_test access.
     let world = sim.world_for_test();
@@ -40,9 +45,10 @@ fn register_spawns_full_component_tuple() {
 #[test]
 fn unknown_region_errors() {
     let mut sim = build_sim();
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
     let bad_region: RegionId = 999;
-    let result = sim.register_authored_base(bad_region, [0.0, 0.0, 0.0], BaseKind::Outpost, pwa);
+    let result =
+        sim.register_authored_base(bad_region, [0.0, 0.0, 0.0], BaseKind::Outpost, coalition);
     assert!(
         result.is_err(),
         "unknown region must error rather than spawn",
@@ -83,14 +89,14 @@ fn camp_site_has_no_nav_footprint() {
     sim.attach_region_terrain(TEST_REGION_ID, hm).unwrap();
     // After attach, the cell at (10, _, 10) is walkable.
     assert!(sim.is_traversable(TEST_REGION_ID, [10.0, 0.0, 10.0]));
-    // Register a CampSite at that location — wanderers is the
+    // Register a CampSite at that location — nomads is the
     // neutral placeholder faction per the world_seed convention.
-    let wanderers = sim.faction_registry().id_of("wanderers").unwrap();
+    let nomads = sim.faction_registry().id_of("nomads").unwrap();
     sim.register_authored_base(
         TEST_REGION_ID,
         [10.0, 0.0, 10.0],
         BaseKind::CampSite,
-        wanderers,
+        nomads,
     )
     .expect("register camp");
     // Cell is STILL walkable — CampSite doesn't stamp.
@@ -129,9 +135,14 @@ fn structured_kind_stamps_nav_footprint() {
     let hm = Heightmap::from_raw(metadata, vec![50.0_f32; 64 * 64]).unwrap();
     sim.attach_region_terrain(TEST_REGION_ID, hm).unwrap();
     assert!(sim.is_traversable(TEST_REGION_ID, [10.0, 0.0, 10.0]));
-    let pwa = sim.faction_registry().id_of("pwa").unwrap();
-    sim.register_authored_base(TEST_REGION_ID, [10.0, 0.0, 10.0], BaseKind::Outpost, pwa)
-        .expect("register outpost");
+    let coalition = sim.faction_registry().id_of("coalition").unwrap();
+    sim.register_authored_base(
+        TEST_REGION_ID,
+        [10.0, 0.0, 10.0],
+        BaseKind::Outpost,
+        coalition,
+    )
+    .expect("register outpost");
     assert!(
         !sim.is_traversable(TEST_REGION_ID, [10.0, 0.0, 10.0]),
         "Outpost must stamp a nav footprint at its center",

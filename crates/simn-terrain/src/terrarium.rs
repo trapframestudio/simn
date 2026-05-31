@@ -27,7 +27,7 @@
 //! over SRTM's 30 m native. **z15 is the ceiling** — the public
 //! Mapzen Terrarium bucket does not serve z16+ tiles in PNW. For
 //! sub-5 m detail we'd need the USGS 3DEP 1 m pipeline (task #49).
-//! Tiles are ~50 KB each; a typical 5 km × 4 km Noosphere map needs
+//! Tiles are ~50 KB each; a typical 5 km × 4 km SIMN map needs
 //! ~15–25 tiles at zoom 15 (~1 MB download, < 10 s).
 
 use std::fs;

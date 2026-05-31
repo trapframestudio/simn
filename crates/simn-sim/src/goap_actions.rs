@@ -1,7 +1,7 @@
 //! Combat action library for the GOAP planner. Defines the concrete
 //! actions NPCs can take in combat, their preconditions and effects,
 //! and per-faction cost overrides that create distinct tactical
-//! doctrines (military NPCs favor cover; bandits rush; cautious
+//! doctrines (military NPCs favor cover; raiders rush; cautious
 //! factions retreat early).
 
 use crate::components::CombatRole;
@@ -9,8 +9,10 @@ use crate::goap::*;
 
 /// Build the full combat action set with faction-specific cost
 /// modifiers applied.
-pub fn combat_actions(faction_name: &str, role: CombatRole) -> Vec<Action> {
-    let costs = faction_costs(faction_name);
+pub fn combat_actions(
+    costs: &crate::faction::registry::CombatCosts,
+    role: CombatRole,
+) -> Vec<Action> {
     let role_mod = role_cost_modifier(role);
 
     vec![
@@ -149,92 +151,6 @@ pub fn combat_goals(
     goals
 }
 
-struct FactionCosts {
-    shoot: f32,
-    advance: f32,
-    move_to_cover: f32,
-    peek: f32,
-    flank: f32,
-    suppress: f32,
-    retreat: f32,
-    reload: f32,
-    heal_ally: f32,
-}
-
-fn faction_costs(faction: &str) -> FactionCosts {
-    // Survival-first doctrine: cover is cheap, open-field advance
-    // is expensive. Military factions are disciplined (use cover
-    // well), bandits are aggressive (rush more), wanderers flee.
-    match faction {
-        "pwa" | "linemen" => FactionCosts {
-            shoot: 1.5,
-            advance: 4.5,
-            move_to_cover: 0.8,
-            peek: 0.8,
-            flank: 2.5,
-            suppress: 1.5,
-            retreat: 5.0,
-            reload: 1.5,
-            heal_ally: 1.5,
-        },
-        "federal" | "ghost_teams" | "recovery_division" => FactionCosts {
-            shoot: 1.5,
-            advance: 4.0,
-            move_to_cover: 0.8,
-            peek: 0.8,
-            flank: 2.0,
-            suppress: 1.0,
-            retreat: 4.0,
-            reload: 1.5,
-            heal_ally: 1.5,
-        },
-        "looters" | "bandits" => FactionCosts {
-            shoot: 1.2,
-            advance: 2.5,
-            move_to_cover: 2.0,
-            peek: 2.0,
-            flank: 1.5,
-            suppress: 3.0,
-            retreat: 2.0,
-            reload: 2.0,
-            heal_ally: 4.0,
-        },
-        "wanderers" => FactionCosts {
-            shoot: 2.0,
-            advance: 5.0,
-            move_to_cover: 1.0,
-            peek: 1.5,
-            flank: 4.0,
-            suppress: 5.0,
-            retreat: 0.8,
-            reload: 2.0,
-            heal_ally: 3.0,
-        },
-        "merged" => FactionCosts {
-            shoot: 0.5,
-            advance: 1.0,
-            move_to_cover: 5.0,
-            peek: 4.0,
-            flank: 1.5,
-            suppress: 3.0,
-            retreat: 10.0,
-            reload: 1.0,
-            heal_ally: 5.0,
-        },
-        _ => FactionCosts {
-            shoot: 1.0,
-            advance: 3.0,
-            move_to_cover: 2.0,
-            peek: 1.5,
-            flank: 3.0,
-            suppress: 2.5,
-            retreat: 4.0,
-            reload: 2.0,
-            heal_ally: 2.5,
-        },
-    }
-}
-
 struct RoleCostMod {
     shoot: f32,
     advance: f32,
@@ -299,10 +215,53 @@ fn role_cost_modifier(role: CombatRole) -> RoleCostMod {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::faction::registry::CombatCosts;
+
+    // Representative doctrines (formerly the hardcoded faction_costs sets),
+    // now passed explicitly since combat_actions is data-driven.
+    fn cc_military() -> CombatCosts {
+        CombatCosts {
+            shoot: 1.5,
+            advance: 4.5,
+            move_to_cover: 0.8,
+            peek: 0.8,
+            flank: 2.5,
+            suppress: 1.5,
+            retreat: 5.0,
+            reload: 1.5,
+            heal_ally: 1.5,
+        }
+    }
+    fn cc_bandit() -> CombatCosts {
+        CombatCosts {
+            shoot: 1.2,
+            advance: 2.5,
+            move_to_cover: 2.0,
+            peek: 2.0,
+            flank: 1.5,
+            suppress: 3.0,
+            retreat: 2.0,
+            reload: 2.0,
+            heal_ally: 4.0,
+        }
+    }
+    fn cc_medic_faction() -> CombatCosts {
+        CombatCosts {
+            shoot: 1.5,
+            advance: 4.0,
+            move_to_cover: 0.8,
+            peek: 0.8,
+            flank: 2.0,
+            suppress: 1.0,
+            retreat: 4.0,
+            reload: 1.5,
+            heal_ally: 1.5,
+        }
+    }
 
     #[test]
     fn military_prefers_cover_over_advance() {
-        let actions = combat_actions("pwa", CombatRole::Support);
+        let actions = combat_actions(&cc_military(), CombatRole::Support);
         let cover_cost = actions
             .iter()
             .find(|a| a.name == "MoveToCover")
@@ -317,7 +276,7 @@ mod tests {
 
     #[test]
     fn bandits_prefer_advance_over_cover() {
-        let actions = combat_actions("bandits", CombatRole::Pointman);
+        let actions = combat_actions(&cc_bandit(), CombatRole::Pointman);
         let cover_cost = actions
             .iter()
             .find(|a| a.name == "MoveToCover")
@@ -326,13 +285,13 @@ mod tests {
         let advance_cost = actions.iter().find(|a| a.name == "Advance").unwrap().cost;
         assert!(
             advance_cost < cover_cost,
-            "Bandit pointman should prefer advance ({advance_cost}) over cover ({cover_cost})"
+            "Raider pointman should prefer advance ({advance_cost}) over cover ({cover_cost})"
         );
     }
 
     #[test]
     fn medic_prioritizes_healing() {
-        let actions = combat_actions("federal", CombatRole::Medic);
+        let actions = combat_actions(&cc_medic_faction(), CombatRole::Medic);
         let heal_cost = actions.iter().find(|a| a.name == "HealAlly").unwrap().cost;
         let shoot_cost = actions.iter().find(|a| a.name == "Shoot").unwrap().cost;
         assert!(
@@ -352,9 +311,9 @@ mod tests {
     fn full_plan_with_faction_costs() {
         let state = WorldState(HAS_TARGET | COVER_AVAILABLE | HAS_AMMO);
         let goals = combat_goals(1.0, false, false, false);
-        let actions = combat_actions("pwa", CombatRole::Support);
+        let actions = combat_actions(&cc_military(), CombatRole::Support);
         let result = crate::goap::plan(state, &goals, &actions, 8);
-        assert!(result.is_some(), "PWA support should find a plan");
+        assert!(result.is_some(), "Coalition support should find a plan");
         let p = result.unwrap();
         assert!(!p.actions.is_empty());
     }

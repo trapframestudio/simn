@@ -51,9 +51,9 @@ fn high_perception_acquires_at_long_range_low_does_not() {
     // pair is in range for the spotter but not for the target).
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    // PWA spots Looters at 95m. Both placed facing each other so
+    // Coalition spots Looters at 95m. Both placed facing each other so
     // FOV doesn't gate anyone out.
-    let spotter = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let spotter = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let target = sim.spawn_npc_for_test("looters", 1, [95.0, 0.0, 0.0], None);
     sim.set_npc_perception_for_test(spotter, 100);
     sim.set_npc_perception_for_test(target, 30);
@@ -88,7 +88,7 @@ fn equal_perception_at_close_range_is_symmetric() {
     // range — both should acquire aggro (the existing behavior).
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let b = sim.spawn_npc_for_test("looters", 1, [30.0, 0.0, 0.0], None);
     sim.set_npc_perception_for_test(a, 50);
     sim.set_npc_perception_for_test(b, 50);
@@ -108,7 +108,7 @@ fn far_pair_below_min_perception_neither_aggros() {
     // should acquire aggro at any tick.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let a = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let a = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     let b = sim.spawn_npc_for_test("looters", 1, [130.0, 0.0, 0.0], None);
     sim.set_npc_perception_for_test(a, 0);
     sim.set_npc_perception_for_test(b, 0);

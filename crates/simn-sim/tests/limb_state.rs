@@ -140,7 +140,7 @@ fn other_limbs_stay_intact_when_one_wounded() {
 fn sever_arm_flips_state_and_zeroes_hp() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     assert!(sim.sever_limb_for_test(id, BodyPart::LeftArm));
     let states = sim.npc_limb_states_for_test(id).unwrap();
     assert!(matches!(states.left_arm, LimbState::Severed));
@@ -163,7 +163,7 @@ fn sever_arm_flips_state_and_zeroes_hp() {
 fn sever_head_kills_npc() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     assert!(sim.sever_limb_for_test(id, BodyPart::Head));
     let states = sim.npc_limb_states_for_test(id).unwrap();
     assert!(matches!(states.head, LimbState::Severed));
@@ -185,7 +185,7 @@ fn sever_overrides_wounded() {
     // Wound a limb (Wounded), then sever it (Severed). Severed wins.
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     sim.apply_damage_to_npc_part(id, BodyPart::LeftArm, 20.0)
         .unwrap();
     assert!(matches!(
@@ -207,7 +207,7 @@ fn sever_persists_when_remaining_wound_clears() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     sim.set_heal_ticks_for_test(40);
-    let id = sim.spawn_npc_for_test("pwa", 1, [0.0, 0.0, 0.0], None);
+    let id = sim.spawn_npc_for_test("coalition", 1, [0.0, 0.0, 0.0], None);
     // Pre-wound the limb so a wound exists, then sever it. Sever
     // doesn't drop the existing wound; the recompute path will run
     // when the bandage heals the wound and it's retained-out.
@@ -239,7 +239,7 @@ fn npc_combat_wound_marks_limb_wounded() {
     let dir = TempDir::new().unwrap();
     let mut sim = quiet_sim(&dir);
     let attacker = sim.spawn_npc_for_test("looters", 1, [0.0, 0.0, 0.0], None);
-    let target = sim.spawn_npc_for_test("pwa", 1, [3.0, 0.0, 0.0], None);
+    let target = sim.spawn_npc_for_test("coalition", 1, [3.0, 0.0, 0.0], None);
     sim.set_npc_aggro_for_test(attacker, target);
     // Tick forward until the combat system has fired at least one
     // wound-grade hit. npc_combat's per-attack damage roll is 5..=20

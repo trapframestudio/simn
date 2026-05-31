@@ -58,7 +58,7 @@ fn offline_npc_picks_a_target_after_first_offline_tick() {
     let mut sim = Sim::new(paths(&dir), legacy_procedural_graph()).unwrap();
     // Activate region 2 so region 1's NPC stays offline.
     sim.set_active_region(2);
-    let id = sim.spawn_offline_npc_for_test("pwa", 1, [100.0, -200.0]);
+    let id = sim.spawn_offline_npc_for_test("coalition", 1, [100.0, -200.0]);
 
     // Before any offline tick the NPC has no target.
     let before = sim.offline_npc_for_test(id).unwrap();
@@ -90,7 +90,7 @@ fn offline_npc_position_changes_over_ticks() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), legacy_procedural_graph()).unwrap();
     sim.set_active_region(2);
-    let id = sim.spawn_offline_npc_for_test("pwa", 1, [500.0, 500.0]);
+    let id = sim.spawn_offline_npc_for_test("coalition", 1, [500.0, 500.0]);
     let start_pos = sim.offline_npc_for_test(id).unwrap().position_2d;
 
     // Run 30 offline ticks (~15 s of sim wall time). Enough for the
@@ -127,7 +127,7 @@ fn offline_npc_in_region_with_no_bases_stays_idle() {
 
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), g).unwrap();
-    let id = sim.spawn_offline_npc_for_test("wanderers", 99, [0.0, 0.0]);
+    let id = sim.spawn_offline_npc_for_test("nomads", 99, [0.0, 0.0]);
 
     for _ in 0..5 {
         tick_one_offline_tick(&mut sim);
@@ -153,7 +153,7 @@ fn offline_npc_arrives_at_target_and_picks_a_new_one() {
     let dir = TempDir::new().unwrap();
     let mut sim = Sim::new(paths(&dir), legacy_procedural_graph()).unwrap();
     sim.set_active_region(2);
-    let id = sim.spawn_offline_npc_for_test("pwa", 1, [0.0, 0.0]);
+    let id = sim.spawn_offline_npc_for_test("coalition", 1, [0.0, 0.0]);
 
     // 100 offline ticks at 0.5 s each = 50 s of offline-tier time.
     // At 6 m/s walking speed, that's up to 300 m of travel — enough

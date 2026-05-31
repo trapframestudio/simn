@@ -114,10 +114,10 @@ fn attach_clamps_existing_bases_to_ground() {
 fn npcs_clamp_to_terrain_per_tick() {
     let mut sim = Sim::new_in_memory(legacy_procedural_graph());
     // `new_in_memory` clears all population targets; opt back into
-    // a small wanderers population per region — enough for the clamp
+    // a small nomads population per region — enough for the clamp
     // assertions to find some, cheap enough to tick.
     for r in [1u32, 2, 3, 4] {
-        sim.set_population_target_for_test(r, "wanderers", 5);
+        sim.set_population_target_for_test(r, "nomads", 5);
     }
     sim.set_active_region(1);
 
@@ -155,10 +155,10 @@ fn npcs_clamp_to_terrain_per_tick() {
 fn regions_without_terrain_leave_y_untouched() {
     let mut sim = Sim::new_in_memory(legacy_procedural_graph());
     // `new_in_memory` clears all population targets; opt back into
-    // a small wanderers population per region — enough for the clamp
+    // a small nomads population per region — enough for the clamp
     // assertions to find some, cheap enough to tick.
     for r in [1u32, 2, 3, 4] {
-        sim.set_population_target_for_test(r, "wanderers", 5);
+        sim.set_population_target_for_test(r, "nomads", 5);
     }
     sim.set_active_region(2);
 

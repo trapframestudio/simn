@@ -57,7 +57,7 @@ impl Loadout {
 }
 
 /// Faction → loadout map. Inserted as an ECS resource at sim init.
-/// Keyed by the registry name string (`"pwa"`) so loadouts compose
+/// Keyed by the registry name string (`"coalition"`) so loadouts compose
 /// cleanly with mod-defined factions. Factions absent from the TOML
 /// get an empty loadout — they spawn with empty pockets and drop
 /// empty corpses.
@@ -152,7 +152,7 @@ impl NpcLoadoutRegistry {
         }
 
         let raw = src
-            .read_str("npc_loadouts.toml")
+            .read_str("ai/npc_loadouts.toml")
             .unwrap_or_else(|e| panic!("npc_loadouts content load failed: {e}"));
         let parsed: File = toml::from_str(&raw).expect("npc_loadouts.toml parse failed");
         let mut by_faction = HashMap::new();
@@ -212,7 +212,7 @@ mod tests {
         let items = registry();
         let regs = NpcLoadoutRegistry::load(&items);
         // Spot-check a couple of factions are present.
-        assert!(!regs.get("pwa").rolls.is_empty());
+        assert!(!regs.get("coalition").rolls.is_empty());
         assert!(!regs.get("looters").rolls.is_empty());
     }
 
@@ -221,8 +221,8 @@ mod tests {
         let items = registry();
         let regs = NpcLoadoutRegistry::load(&items);
         let mut rng = ChaCha8Rng::seed_from_u64(7);
-        let stacks = regs.get("pwa").generate(&mut rng);
-        // PWA has at least one chance=1.0 entry (bandage + preserved_ration).
+        let stacks = regs.get("coalition").generate(&mut rng);
+        // Coalition has at least one chance=1.0 entry (bandage + preserved_ration).
         assert!(stacks.iter().any(|(id, _)| id.0 == "bandage"));
     }
 
@@ -231,8 +231,11 @@ mod tests {
         let items = registry();
         let regs = NpcLoadoutRegistry::load(&items);
         let mut rng = ChaCha8Rng::seed_from_u64(42);
-        let grid = regs.build_inventory("federal", &items, &mut rng);
-        assert!(!grid.items.is_empty(), "Federal NPC should carry something");
+        let grid = regs.build_inventory("directorate", &items, &mut rng);
+        assert!(
+            !grid.items.is_empty(),
+            "Directorate NPC should carry something"
+        );
     }
 
     #[test]
@@ -243,6 +246,6 @@ mod tests {
         // but rolling against a low-chance entry many times.
         let items = registry();
         let regs = NpcLoadoutRegistry::load(&items);
-        let _ = regs.get("wanderers");
+        let _ = regs.get("nomads");
     }
 }

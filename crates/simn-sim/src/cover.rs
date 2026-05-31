@@ -74,7 +74,7 @@ pub fn material_table() -> &'static HashMap<CoverMaterialId, CoverMaterialDef> {
     // so the table is process-global and read from the embedded pack.
     MATERIAL_TABLE.get_or_init(|| {
         let toml_str = crate::ContentSource::Embedded
-            .read_str("cover_materials.toml")
+            .read_str("combat/cover_materials.toml")
             .expect("embedded cover_materials.toml present");
         let file: CoverMaterialsFile =
             toml::from_str(&toml_str).expect("cover_materials.toml parse");

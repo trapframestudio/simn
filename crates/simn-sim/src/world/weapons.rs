@@ -894,9 +894,9 @@ impl Sim {
 
 /// Phase 4B v1 — faction-flavored NPC round selection. Each
 /// faction's "default round" maps to the caliber its loadout
-/// most often carries. PWA / Federal / Aegis / Revere Guard /
-/// Attuned fire rifle-caliber intermediates; bandits / wanderers
-/// fire pistol-caliber cheap ammo; Gulf Compact splits.
+/// most often carries. Coalition / Directorate / Consortium / Homesteaders /
+/// Order fire rifle-caliber intermediates; raiders / nomads
+/// fire pistol-caliber cheap ammo; Syndicate splits.
 ///
 /// Returns an `ItemId` that must exist in `ammo.toml` — caller
 /// (`npc_fire_projectile`) validates by reading the round's
@@ -908,18 +908,18 @@ impl Sim {
 /// Until then this lookup is the single source of truth.
 pub fn default_npc_round_for_faction(faction: &str) -> ItemId {
     let id = match faction {
-        "pwa" => "round_5_45x39",
-        "federal" => "round_556x45_m193",
-        "aegis_pacific" => "round_556x45_m193",
-        "revere_guard" => "round_5_45x39",
-        "attuned" => "round_762x39",
-        "gulf_compact" => "round_9x19",
-        "bandits" => "round_9x18",
-        "wanderers" => "round_9x18",
-        "linemen" => "round_5_45x39",
+        "coalition" => "round_5_45x39",
+        "directorate" => "round_556x45_m193",
+        "consortium" => "round_556x45_m193",
+        "homesteaders" => "round_5_45x39",
+        "the_order" => "round_762x39",
+        "syndicate" => "round_9x19",
+        "raiders" => "round_9x18",
+        "nomads" => "round_9x18",
+        "coalition_vanguard" => "round_5_45x39",
         // Unknown factions (mods, future additions) fall back to
         // the intermediate-caliber neutral default. Same posture
-        // as the loot-pool registry's wanderers fallback.
+        // as the loot-pool registry's nomads fallback.
         _ => "round_5_45x39",
     };
     ItemId::from(id)

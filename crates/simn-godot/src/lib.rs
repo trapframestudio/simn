@@ -9,10 +9,10 @@ mod sim;
 mod terrain;
 mod util;
 
-struct NoosphereExtension;
+struct SimnExtension;
 
 #[gdextension]
-unsafe impl ExtensionLibrary for NoosphereExtension {
+unsafe impl ExtensionLibrary for SimnExtension {
     fn on_stage_init(stage: InitStage) {
         if stage == InitStage::Scene {
             init_tracing();

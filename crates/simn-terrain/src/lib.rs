@@ -1,4 +1,4 @@
-//! simn-terrain — Canonical heightmap loader + sampler for Noosphere.
+//! simn-terrain — Canonical heightmap loader + sampler for SIMN.
 //!
 //! Engine-agnostic. The server is authoritative for terrain elevation;
 //! this crate is the single source of truth the server consults. The
