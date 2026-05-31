@@ -1,0 +1,28 @@
+; SIMN GDExtension — template for consumers.
+;
+; Copy this into your Godot project (e.g. as `godot/simn.gdextension`),
+; then adjust the library paths below to wherever YOU build/ship the
+; `simn_godot` cdylib. Godot auto-discovers any *.gdextension file in the
+; project, so no plugin.cfg / EditorPlugin is required.
+;
+; The debug entries below assume you build from a Cargo workspace whose
+; `target/` sits one level above the Godot project dir (res://../target),
+; which is the layout the sync-into-addons flow produces. The release
+; entries assume you ship prebuilt libs under addons/simn/bin/<platform>/.
+;
+; If your engine bridge links Steam (or any other native dep), add a
+; per-platform [dependencies] block in YOUR copy — keep it out of this
+; generic template.
+
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 = "res://../target/debug/libsimn_godot.so"
+linux.release.x86_64 = "res://addons/simn/bin/linux/libsimn_godot.so"
+windows.debug.x86_64 = "res://../target/debug/simn_godot.dll"
+windows.release.x86_64 = "res://addons/simn/bin/windows/simn_godot.dll"
+macos.debug = "res://../target/debug/libsimn_godot.dylib"
+macos.release = "res://addons/simn/bin/macos/libsimn_godot.dylib"
