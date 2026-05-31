@@ -60,6 +60,27 @@ cargo test -p simn-sim          # fast suite
 cargo build -p simn-godot       # the cdylib Godot loads (libsimn_godot.*)
 ```
 
+## Development
+
+SIMN is a normal Rust workspace, so you can develop it standalone here: edit,
+`cargo test -p simn-sim`, `cargo clippy --workspace`, `cargo fmt`. (There's no
+enforced commit gate yet, so run those by hand before you push.)
+
+When you're building a game on SIMN at the same time, you don't want to push and
+re-pin for every engine edit. Clone SIMN beside your game and **link** it in
+with the shipped script, so the game builds your live engine edits directly:
+
+```bash
+# in your game project (after copying godot-addon/sync-simn.sh into scripts/):
+./scripts/sync-simn.sh --link /path/to/this/clone
+# then: edit here, cargo build / run the game, repeat. no push, no pin bump.
+```
+
+Push engine changes from this repo on their own cadence; bump your game's
+`scripts/SIMN_VERSION` when it adopts a version. The full consumer workflow,
+including the one-time setup and the copy-vs-link modes, is in
+[`godot-addon/README.md`](godot-addon/README.md).
+
 ## License
 
 The code is dual-licensed under [MIT](LICENSE-MIT) or

@@ -75,9 +75,49 @@ falls back to the embedded base. So a game usually ships only its identity
 (`factions/factions.toml`, `names/`, `ai/chatter_lines.toml`) and inherits the
 rest. See the top-level `README.md`.
 
-## Keeping in sync
+## The sync script
 
-Treat the vendored copy as read-only and pin it to a SIMN commit. When you want
-engine changes, make them here in the SIMN repo, push, then bump your pin and
-re-sync. A tiny `sync-simn.sh` in your game that clones this repo at a pinned
-ref and copies `crates/` + `content/` into `addons/simn/` is all it takes.
+This folder ships `sync-simn.sh` so you don't have to write it. Copy it into
+your project's `scripts/` and add a `scripts/SIMN_VERSION` file holding the SIMN
+commit you want to pin:
+
+```bash
+cp /path/to/simn/godot-addon/sync-simn.sh  scripts/sync-simn.sh
+chmod +x scripts/sync-simn.sh
+echo <simn-commit-sha> > scripts/SIMN_VERSION
+echo '/godot/addons/simn/' >> .gitignore
+./scripts/sync-simn.sh        # vendors crates/ + content/ + builds the bridge
+```
+
+It has two modes:
+
+- **Copy (default):** `./scripts/sync-simn.sh` drops a frozen snapshot at the
+  pin into `godot/addons/simn/`. Reproducible; what contributors and CI use.
+- **Link (`--link <clone>`):** symlinks `godot/addons/simn/{crates,content}` at
+  a local SIMN working clone, so the engine builds live without a copy. This is
+  the setup for developing the engine and your game together (see below).
+  Symlinks work on Linux/macOS/WSL; native Windows needs a junction or Dev Mode.
+
+## Developing the engine and your game together
+
+If you're actively changing the sim, don't round-trip through copy-mode for
+every edit. Clone SIMN beside your project and link it in:
+
+```bash
+./scripts/sync-simn.sh --link /path/to/simn-clone
+```
+
+Then three loops:
+
+1. **Inner (constant):** edit the SIMN clone; `cargo build` / run your game. It
+   compiles the clone's working tree through the symlink, including uncommitted
+   edits. No push, no pin bump, no sync to test.
+2. **Publish (when a change is solid):** `cargo test` (+ clippy/fmt) in the
+   clone, then commit and push to SIMN. The engine keeps its own history.
+3. **Adopt (record what your project runs on):** bump `scripts/SIMN_VERSION` to
+   the pushed commit and commit it in your project. Do this on every adopted
+   engine change so your main always pins a real engine commit, and anyone on
+   copy mode gets exactly what you built against.
+
+Treat the vendored `godot/addons/simn/` as read-only in copy mode (the next sync
+overwrites it). In link mode you're editing the clone, which is the point.
